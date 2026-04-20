@@ -13,6 +13,7 @@
 | `API_TIMEOUT_MS` | 否 | API 请求超时，默认 600000 (10min) |
 | `DISABLE_TELEMETRY` | 否 | 设为 `1` 禁用遥测 |
 | `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` | 否 | 设为 `1` 禁用非必要网络请求 |
+| `SERVER_AUTH_TOKEN` | 否 | 桌面 Server / Docker 反向代理场景的服务端鉴权 Bearer Token，优先级高于 `ANTHROPIC_API_KEY` |
 
 ## 配置方式
 

@@ -4,6 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 
 const host = process.env.TAURI_DEV_HOST
+const proxyTarget = process.env.VITE_DEV_API_PROXY_TARGET || 'http://127.0.0.1:3456'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
@@ -19,6 +20,34 @@ export default defineConfig({
     strictPort: true,
     host: host || false,
     hmr: host ? { protocol: 'ws', host, port: 1421 } : undefined,
+    proxy: {
+      '/api': {
+        target: proxyTarget,
+        changeOrigin: true,
+      },
+      '/proxy': {
+        target: proxyTarget,
+        changeOrigin: true,
+      },
+      '/health': {
+        target: proxyTarget,
+        changeOrigin: true,
+      },
+      '/callback': {
+        target: proxyTarget,
+        changeOrigin: true,
+      },
+      '/ws': {
+        target: proxyTarget,
+        changeOrigin: true,
+        ws: true,
+      },
+      '/sdk': {
+        target: proxyTarget,
+        changeOrigin: true,
+        ws: true,
+      },
+    },
     watch: {
       ignored: ['**/src-tauri/**'],
     },

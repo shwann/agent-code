@@ -1,0 +1,14 @@
+.git
+.github
+.idea
+node_modules
+desktop/node_modules
+desktop/dist
+desktop/build-artifacts
+desktop/src-tauri/target
+docs/.vitepress/cache
+docs/.vitepress/dist
+coverage
+tmp
+*.log
+dist

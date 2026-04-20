@@ -1,0 +1,23 @@
+FROM oven/bun:1
+
+WORKDIR /app
+
+ARG NPM_CONFIG_REGISTRY=https://registry.npmjs.org/
+ENV NPM_CONFIG_REGISTRY=${NPM_CONFIG_REGISTRY}
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends bash git openssh-client ripgrep ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
+COPY package.json bunfig.toml ./
+RUN bun install
+
+COPY . .
+
+ENV NODE_ENV=production \
+  SERVER_HOST=0.0.0.0 \
+  SERVER_PORT=3456
+
+EXPOSE 3456
+
+CMD ["bun", "run", "src/server/index.ts", "--host", "0.0.0.0", "--port", "3456"]

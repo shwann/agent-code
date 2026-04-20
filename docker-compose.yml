@@ -1,0 +1,45 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+      args:
+        NPM_CONFIG_REGISTRY: ${NPM_CONFIG_REGISTRY:-https://registry.npmjs.org/}
+    restart: unless-stopped
+    environment:
+      SERVER_HOST: 0.0.0.0
+      SERVER_PORT: 3456
+      SERVER_AUTH_TOKEN: ${SERVER_AUTH_TOKEN:?set SERVER_AUTH_TOKEN in .env}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_AUTH_TOKEN: ${ANTHROPIC_AUTH_TOKEN:-}
+      ANTHROPIC_BASE_URL: ${ANTHROPIC_BASE_URL:-}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-}
+      ANTHROPIC_DEFAULT_SONNET_MODEL: ${ANTHROPIC_DEFAULT_SONNET_MODEL:-}
+      ANTHROPIC_DEFAULT_HAIKU_MODEL: ${ANTHROPIC_DEFAULT_HAIKU_MODEL:-}
+      ANTHROPIC_DEFAULT_OPUS_MODEL: ${ANTHROPIC_DEFAULT_OPUS_MODEL:-}
+      API_TIMEOUT_MS: ${API_TIMEOUT_MS:-600000}
+      DISABLE_TELEMETRY: ${DISABLE_TELEMETRY:-1}
+      CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: ${CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC:-1}
+      TZ: ${TZ:-Asia/Shanghai}
+    volumes:
+      - claude_data:/root/.claude
+      - ${CC_HAHA_WORKSPACE_DIR:-./workspace}:/workspace
+    expose:
+      - "3456"
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+      args:
+        NPM_CONFIG_REGISTRY: ${NPM_CONFIG_REGISTRY:-https://registry.npmjs.org/}
+    restart: unless-stopped
+    depends_on:
+      - app
+    environment:
+      SERVER_AUTH_TOKEN: ${SERVER_AUTH_TOKEN:?set SERVER_AUTH_TOKEN in .env}
+    ports:
+      - "${CC_HAHA_HTTP_PORT:-8080}:80"
+
+volumes:
+  claude_data:

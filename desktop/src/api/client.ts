@@ -1,9 +1,31 @@
-const DEFAULT_BASE_URL = 'http://127.0.0.1:3456'
+function stripTrailingSlash(url: string) {
+  return url.replace(/\/$/, '')
+}
+
+function resolveDefaultBaseUrl() {
+  const envBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim()
+  if (envBaseUrl) {
+    return stripTrailingSlash(envBaseUrl)
+  }
+
+  if (typeof window === 'undefined') {
+    return 'http://127.0.0.1:3456'
+  }
+
+  const isTauriRuntime = '__TAURI_INTERNALS__' in window || '__TAURI__' in window
+  if (isTauriRuntime) {
+    return 'http://127.0.0.1:3456'
+  }
+
+  return stripTrailingSlash(window.location.origin)
+}
+
+const DEFAULT_BASE_URL = resolveDefaultBaseUrl()
 
 let baseUrl = DEFAULT_BASE_URL
 
 export function setBaseUrl(url: string) {
-  baseUrl = url.replace(/\/$/, '')
+  baseUrl = stripTrailingSlash(url)
 }
 
 export function getBaseUrl() {
