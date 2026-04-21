@@ -21,6 +21,9 @@ const VALID_PERMISSION_MODES = [
   'dontAsk',
 ] as const
 
+const ROOT_BYPASS_PERMISSIONS_MESSAGE =
+  'Bypass permissions mode is not available while the server is running as root. Use default or acceptEdits instead.'
+
 export type PermissionMode = (typeof VALID_PERMISSION_MODES)[number]
 
 export class SettingsService {
@@ -136,7 +139,17 @@ export class SettingsService {
   /** 获取当前权限模式 */
   async getPermissionMode(): Promise<string> {
     const settings = await this.getUserSettings()
-    return (settings.defaultMode as string) || 'default'
+    const configuredMode =
+      typeof settings.defaultMode === 'string' ? settings.defaultMode : undefined
+    const resolvedMode = this.normalizePermissionMode(configuredMode)
+
+    if (configuredMode === 'bypassPermissions' && resolvedMode !== configuredMode) {
+      console.warn(
+        `[SettingsService] Falling back from unsupported permission mode "bypassPermissions" to "${resolvedMode}"`,
+      )
+    }
+
+    return resolvedMode
   }
 
   /** 设置权限模式 */
@@ -146,6 +159,39 @@ export class SettingsService {
         `Invalid permission mode: "${mode}". Valid modes: ${VALID_PERMISSION_MODES.join(', ')}`,
       )
     }
+    this.ensurePermissionModeSupported(mode as PermissionMode)
     await this.updateUserSettings({ defaultMode: mode })
+  }
+
+  private normalizePermissionMode(mode: string | undefined): PermissionMode {
+    if (!mode || !VALID_PERMISSION_MODES.includes(mode as PermissionMode)) {
+      return 'default'
+    }
+
+    if (mode === 'bypassPermissions' && !this.canUseBypassPermissions()) {
+      return 'default'
+    }
+
+    return mode as PermissionMode
+  }
+
+  private ensurePermissionModeSupported(mode: PermissionMode): void {
+    if (mode === 'bypassPermissions' && !this.canUseBypassPermissions()) {
+      throw ApiError.badRequest(ROOT_BYPASS_PERMISSIONS_MESSAGE)
+    }
+  }
+
+  private canUseBypassPermissions(): boolean {
+    if (
+      process.platform !== 'win32' &&
+      typeof process.getuid === 'function' &&
+      process.getuid() === 0 &&
+      process.env.IS_SANDBOX !== '1' &&
+      process.env.CLAUDE_CODE_BUBBLEWRAP !== '1'
+    ) {
+      return false
+    }
+
+    return true
   }
 }

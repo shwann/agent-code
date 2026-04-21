@@ -15,6 +15,7 @@ import { handleStatusApi, resetUsage, addUsage } from '../api/status.js'
 
 let tmpDir: string
 let originalConfigDir: string | undefined
+const originalGetuid = process.getuid
 
 async function setup() {
   tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'claude-test-'))
@@ -27,6 +28,9 @@ async function teardown() {
     process.env.CLAUDE_CONFIG_DIR = originalConfigDir
   } else {
     delete process.env.CLAUDE_CONFIG_DIR
+  }
+  if (originalGetuid) {
+    ;(process as typeof process & { getuid?: () => number }).getuid = originalGetuid
   }
   await fs.rm(tmpDir, { recursive: true, force: true })
 }
@@ -134,6 +138,25 @@ describe('SettingsService', () => {
     expect(settings.theme).toBe('dark')
     expect(settings.defaultMode).toBe('acceptEdits')
   })
+
+  it('should fall back to default when bypassPermissions is configured under root', async () => {
+    ;(process as typeof process & { getuid?: () => number }).getuid = () => 0
+
+    const svc = new SettingsService()
+    await svc.updateUserSettings({ defaultMode: 'bypassPermissions' })
+
+    const mode = await svc.getPermissionMode()
+    expect(mode).toBe('default')
+  })
+
+  it('should reject bypassPermissions when running as root', async () => {
+    ;(process as typeof process & { getuid?: () => number }).getuid = () => 0
+
+    const svc = new SettingsService()
+    await expect(svc.setPermissionMode('bypassPermissions')).rejects.toThrow(
+      'Bypass permissions mode is not available while the server is running as root',
+    )
+  })
 })
 
 // =============================================================================
@@ -194,14 +217,14 @@ describe('Settings API', () => {
 
   it('PUT /api/permissions/mode should set mode', async () => {
     const { req, url, segments } = makeRequest('PUT', '/api/permissions/mode', {
-      mode: 'bypassPermissions',
+      mode: 'plan',
     })
     const res = await handleSettingsApi(req, url, segments)
 
     expect(res.status).toBe(200)
     const body = await res.json()
     expect(body.ok).toBe(true)
-    expect(body.mode).toBe('bypassPermissions')
+    expect(body.mode).toBe('plan')
   })
 
   it('PUT /api/permissions/mode should reject invalid mode', async () => {
@@ -211,6 +234,19 @@ describe('Settings API', () => {
     const res = await handleSettingsApi(req, url, segments)
 
     expect(res.status).toBe(400)
+  })
+
+  it('PUT /api/permissions/mode should reject bypassPermissions when running as root', async () => {
+    ;(process as typeof process & { getuid?: () => number }).getuid = () => 0
+
+    const { req, url, segments } = makeRequest('PUT', '/api/permissions/mode', {
+      mode: 'bypassPermissions',
+    })
+    const res = await handleSettingsApi(req, url, segments)
+
+    expect(res.status).toBe(400)
+    const body = await res.json()
+    expect(body.message).toContain('running as root')
   })
 
   it('should return 404 for unknown settings endpoint', async () => {

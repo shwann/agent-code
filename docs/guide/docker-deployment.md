@@ -327,7 +327,32 @@ docker compose --env-file .env.docker up -d
 docker compose --env-file .env.docker logs -f app
 ```
 
-### 5. 想部署桌面端而不是 Web UI
+### 5. 问几次之后出现 `CLI 进程启动失败`
+
+如果日志里有这一类报错：
+
+```text
+--dangerously-skip-permissions cannot be used with root/sudo privileges
+```
+
+原因：
+
+- Docker 容器默认以 `root` 身份运行
+- 你把权限模式切到了 `bypassPermissions`（页面里显示为“跳过”）
+- Claude CLI 会拒绝在 `root` 容器里使用这个模式
+
+处理：
+
+- 把权限模式切回 `default` 或 `acceptEdits`
+- 升级到包含本仓库最新修复的镜像，新版本会自动把这类不兼容的旧配置回退到 `default`
+
+检查命令：
+
+```bash
+docker compose --env-file .env.docker logs -f app
+```
+
+### 6. 想部署桌面端而不是 Web UI
 
 Docker 不适合承载 Tauri 桌面安装包分发。
 
