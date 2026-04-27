@@ -43,3 +43,12 @@ services:
 
 volumes:
   claude_data:
+
+
+
+
+#docker builder prune -af 
+#docker compose down 
+#docker compose build
+#docker compose up
+#docker compose down && docker compose build && docker compose up -d 

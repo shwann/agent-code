@@ -517,6 +517,22 @@ export class ConversationService {
     sdkUrl?: string,
     options?: SessionStartOptions,
   ): Promise<Record<string, string>> {
+    // ========================================
+    // Force preserve ANTHROPIC_* vars if present
+    // ========================================
+    const hasDirectCredentials = !!(process.env.ANTHROPIC_AUTH_TOKEN || process.env.ANTHROPIC_API_KEY);
+    const forcedEnv: Record<string, string> = {};
+    if (hasDirectCredentials) {
+      console.log('[conversationService] FORCE MODE DETECTED - Preserving all ANTHROPIC_* vars');
+      for (const key in process.env) {
+        if (key.startsWith('ANTHROPIC_') || key === 'API_TIMEOUT_MS') {
+          if (process.env[key]) {
+            forcedEnv[key] = process.env[key];
+          }
+        }
+      }
+    }
+
     // Provider isolation: when Desktop has its own provider config/index,
     // strip inherited provider env vars so the child CLI reads fresh values
     // from ~/.claude/cc-haha/settings.json instead of stale process.env.
@@ -616,6 +632,15 @@ export class ConversationService {
     console.log('  - ANTHROPIC_API_KEY (first 8 chars):', resultEnv.ANTHROPIC_API_KEY ? `${resultEnv.ANTHROPIC_API_KEY.slice(0, 8)}...` : 'not set')
     console.log('  - ANTHROPIC_AUTH_TOKEN (first 8 chars):', resultEnv.ANTHROPIC_AUTH_TOKEN ? `${resultEnv.ANTHROPIC_AUTH_TOKEN.slice(0, 8)}...` : 'not set')
     console.log('  - ANTHROPIC_BASE_URL:', resultEnv.ANTHROPIC_BASE_URL)
+
+    // ========================================
+    // Force apply the saved env vars before return
+    // ========================================
+    if (hasDirectCredentials) {
+      Object.assign(resultEnv, forcedEnv)
+      delete resultEnv.CLAUDE_CODE_ENTRYPOINT
+      console.log('[conversationService] FORCE APPLIED:', Object.keys(forcedEnv))
+    }
 
     return resultEnv
   }
