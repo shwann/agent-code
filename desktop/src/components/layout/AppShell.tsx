@@ -8,12 +8,14 @@ import { useUIStore, type SettingsTab } from '../../stores/uiStore'
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts'
 import { initializeDesktopServerUrl } from '../../lib/desktopRuntime'
 import { TabBar } from './TabBar'
+import { StartupErrorView } from './StartupErrorView'
 import { useTabStore, SETTINGS_TAB_ID } from '../../stores/tabStore'
 import { useChatStore } from '../../stores/chatStore'
 import { useTranslation } from '../../i18n'
 
 export function AppShell() {
   const fetchSettings = useSettingsStore((s) => s.fetchAll)
+  const sidebarOpen = useUIStore((s) => s.sidebarOpen)
   const [ready, setReady] = useState(false)
   const [startupError, setStartupError] = useState<string | null>(null)
   const t = useTranslation()
@@ -28,8 +30,9 @@ export function AppShell() {
 
         // Restore tabs from localStorage
         await useTabStore.getState().restoreTabs()
-        const activeId = useTabStore.getState().activeTabId
-        if (activeId) {
+        const { activeTabId: activeId, tabs } = useTabStore.getState()
+        const activeTab = tabs.find((tab) => tab.sessionId === activeId)
+        if (activeId && activeTab?.type === 'session') {
           useChatStore.getState().connectToSession(activeId)
         }
         if (!cancelled) {
@@ -71,18 +74,7 @@ export function AppShell() {
   useKeyboardShortcuts()
 
   if (startupError) {
-    return (
-      <div className="h-screen flex items-center justify-center bg-[var(--color-surface)] px-6">
-        <div className="max-w-xl rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-6">
-          <h1 className="text-lg font-semibold text-[var(--color-text-primary)]">
-            {t('app.serverFailed')}
-          </h1>
-          <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
-            {startupError}
-          </p>
-        </div>
-      </div>
-    )
+    return <StartupErrorView error={startupError} />
   }
 
   if (!ready) {
@@ -94,9 +86,19 @@ export function AppShell() {
   }
 
   return (
-    <div className="h-screen flex overflow-hidden">
-      <Sidebar />
-      <main id="content-area" className="flex-1 flex flex-col overflow-hidden">
+    <div className="h-screen flex overflow-hidden bg-[var(--color-surface)]">
+      <div
+        data-testid="sidebar-shell"
+        data-state={sidebarOpen ? 'open' : 'closed'}
+        className="sidebar-shell"
+      >
+        <Sidebar />
+      </div>
+      <main
+        id="content-area"
+        data-sidebar-state={sidebarOpen ? 'open' : 'closed'}
+        className="min-w-0 flex-1 flex flex-col overflow-hidden"
+      >
         <TabBar />
         <ContentRouter />
       </main>

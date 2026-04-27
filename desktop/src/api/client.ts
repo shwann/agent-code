@@ -3,7 +3,19 @@ function stripTrailingSlash(url: string) {
 }
 
 function resolveDefaultBaseUrl() {
-  const envBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim()
+  // 优先检查 VITE_DESKTOP_SERVER_URL
+  const envDesktopUrl =
+    typeof import.meta !== 'undefined' &&
+    typeof import.meta.env?.VITE_DESKTOP_SERVER_URL === 'string' &&
+    import.meta.env.VITE_DESKTOP_SERVER_URL.length > 0
+      ? import.meta.env.VITE_DESKTOP_SERVER_URL
+      : undefined
+  if (envDesktopUrl) {
+    return stripTrailingSlash(envDesktopUrl)
+  }
+
+  // 然后检查 VITE_API_BASE_URL
+  const envBaseUrl = import.meta.env?.VITE_API_BASE_URL?.trim()
   if (envBaseUrl) {
     return stripTrailingSlash(envBaseUrl)
   }
@@ -24,6 +36,18 @@ const DEFAULT_BASE_URL = resolveDefaultBaseUrl()
 
 let baseUrl = DEFAULT_BASE_URL
 
+function getErrorMessage(status: number, body: unknown) {
+  if (body && typeof body === 'object' && 'message' in body && typeof body.message === 'string') {
+    return body.message
+  }
+
+  if (typeof body === 'string' && body.trim().length > 0) {
+    return body
+  }
+
+  return `API error ${status}`
+}
+
 export function setBaseUrl(url: string) {
   baseUrl = stripTrailingSlash(url)
 }
@@ -41,7 +65,7 @@ export class ApiError extends Error {
     public status: number,
     public body: unknown,
   ) {
-    super(`API error ${status}: ${typeof body === 'string' ? body : JSON.stringify(body)}`)
+    super(getErrorMessage(status, body))
     this.name = 'ApiError'
   }
 }
@@ -53,7 +77,8 @@ async function request<T>(method: string, path: string, body?: unknown, options?
   }
 
   const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), options?.timeout ?? 30_000)
+  const timeoutMs = options?.timeout ?? 30_000
+  const timeout = setTimeout(() => controller.abort(), timeoutMs)
   try {
     const res = await fetch(url, {
       method,
@@ -72,6 +97,9 @@ async function request<T>(method: string, path: string, body?: unknown, options?
     return res.json() as Promise<T>
   } catch (err) {
     clearTimeout(timeout)
+    if (controller.signal.aborted) {
+      throw new Error(`Request timed out after ${Math.round(timeoutMs / 1000)}s`)
+    }
     throw err
   }
 }

@@ -28,6 +28,7 @@ import type {
 
 const MANAGED_ENV_KEYS = [
   'ANTHROPIC_BASE_URL',
+  'ANTHROPIC_API_KEY',
   'ANTHROPIC_AUTH_TOKEN',
   'ANTHROPIC_MODEL',
   'ANTHROPIC_DEFAULT_HAIKU_MODEL',
@@ -66,7 +67,11 @@ export class ProviderService {
   private async readIndex(): Promise<ProvidersIndex> {
     try {
       const raw = await fs.readFile(this.getIndexPath(), 'utf-8')
-      return JSON.parse(raw) as ProvidersIndex
+      const parsed = JSON.parse(raw) as Partial<ProvidersIndex>
+      return {
+        activeId: parsed.activeId ?? null,
+        providers: parsed.providers ?? [],
+      }
     } catch (err: unknown) {
       if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
         return { ...DEFAULT_INDEX, providers: [] }
@@ -113,6 +118,15 @@ export class ProviderService {
       await fs.unlink(tmpFile).catch(() => {})
       throw ApiError.internal(`Failed to write settings.json: ${err}`)
     }
+  }
+
+  async getManagedSettings(): Promise<Record<string, unknown>> {
+    return this.readSettings()
+  }
+
+  async updateManagedSettings(settings: Record<string, unknown>): Promise<void> {
+    const current = await this.readSettings()
+    await this.writeSettings(Object.assign({}, current, settings))
   }
 
   // --- CRUD ---
@@ -213,23 +227,45 @@ export class ProviderService {
 
   // --- Settings sync ---
 
-  private async syncToSettings(provider: SavedProvider): Promise<void> {
-    const settings = await this.readSettings()
-    const existingEnv = (settings.env as Record<string, string>) || {}
-
+  private buildManagedEnv(
+    provider: SavedProvider,
+    options?: { proxyPath?: string },
+  ): Record<string, string> {
     const needsProxy = provider.apiFormat != null && provider.apiFormat !== 'anthropic'
+    const proxyPath = options?.proxyPath ?? '/proxy'
     const baseUrl = needsProxy
-      ? `http://127.0.0.1:${ProviderService.serverPort}/proxy`
+      ? `http://127.0.0.1:${ProviderService.serverPort}${proxyPath}`
       : provider.baseUrl
 
-    settings.env = {
-      ...existingEnv,
+    return {
       ANTHROPIC_BASE_URL: baseUrl,
-      ANTHROPIC_AUTH_TOKEN: needsProxy ? 'proxy-managed' : provider.apiKey,
+      ANTHROPIC_API_KEY: needsProxy ? 'proxy-managed' : provider.apiKey,
       ANTHROPIC_MODEL: provider.models.main,
       ANTHROPIC_DEFAULT_HAIKU_MODEL: provider.models.haiku,
       ANTHROPIC_DEFAULT_SONNET_MODEL: provider.models.sonnet,
       ANTHROPIC_DEFAULT_OPUS_MODEL: provider.models.opus,
+    }
+  }
+
+  async getProviderRuntimeEnv(id: string): Promise<Record<string, string>> {
+    const provider = await this.getProvider(id)
+    return this.buildManagedEnv(provider, {
+      proxyPath: `/proxy/providers/${provider.id}`,
+    })
+  }
+
+  private async syncToSettings(provider: SavedProvider): Promise<void> {
+    const settings = await this.readSettings()
+    const existingEnv = (settings.env as Record<string, string>) || {}
+    const cleanedEnv = { ...existingEnv }
+
+    for (const key of MANAGED_ENV_KEYS) {
+      delete cleanedEnv[key]
+    }
+
+    settings.env = {
+      ...cleanedEnv,
+      ...this.buildManagedEnv(provider),
     }
 
     await this.writeSettings(settings)
@@ -297,11 +333,20 @@ export class ProviderService {
 
   // --- Proxy support ---
 
-  async getActiveProviderForProxy(): Promise<{
+  async getProviderForProxy(providerId?: string): Promise<{
     baseUrl: string
     apiKey: string
     apiFormat: ApiFormat
   } | null> {
+    if (providerId) {
+      const provider = await this.getProvider(providerId)
+      return {
+        baseUrl: provider.baseUrl,
+        apiKey: provider.apiKey,
+        apiFormat: provider.apiFormat ?? 'anthropic',
+      }
+    }
+
     const index = await this.readIndex()
     if (!index.activeId) return null
     const provider = index.providers.find((p) => p.id === index.activeId)
@@ -311,6 +356,14 @@ export class ProviderService {
       apiKey: provider.apiKey,
       apiFormat: provider.apiFormat ?? 'anthropic',
     }
+  }
+
+  async getActiveProviderForProxy(): Promise<{
+    baseUrl: string
+    apiKey: string
+    apiFormat: ApiFormat
+  } | null> {
+    return this.getProviderForProxy()
   }
 
   // --- Test ---
@@ -530,4 +583,3 @@ function validateResponseBody(
   }
   return { ok: true, model: (body.model as string) || undefined }
 }
-
