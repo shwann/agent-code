@@ -65,3 +65,4 @@ runtime/__pycache__
 
 # IDE
 .idea
+rustup-init
