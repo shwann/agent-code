@@ -81,7 +81,7 @@ export function ActiveSession() {
   if (!activeTabId) return null
 
   return (
-    <div className="flex-1 flex flex-col relative overflow-hidden bg-[var(--color-surface)] text-[var(--color-text-primary)]">
+    <div className="app-canvas flex-1 flex flex-col relative overflow-hidden text-[var(--color-text-primary)]">
       {isMemberSession && (
         <div className="shrink-0 border-b border-[var(--color-border)] bg-[var(--color-surface-container)]">
           <div className="mx-auto max-w-[860px] flex items-center justify-between gap-4 px-8 py-2">
@@ -128,8 +128,8 @@ export function ActiveSession() {
       )}
 
       {isEmpty ? (
-        <div className="flex flex-1 flex-col items-center justify-center p-8 pb-32">
-          <div className="flex max-w-xl flex-col items-center text-center">
+        <div className="empty-stage relative flex flex-1 flex-col items-center justify-center p-8 pb-40">
+          <div className="flex max-w-[620px] flex-col items-center text-center">
             {isMemberSession ? (
               <>
                 <span className="material-symbols-outlined text-[48px] mb-4 text-[var(--color-text-tertiary)]">smart_toy</span>
@@ -141,11 +141,11 @@ export function ActiveSession() {
               </>
             ) : (
               <>
-                <img src="/app-icon.png" alt="AgentCode" className="mb-6 h-16 w-16 rounded-2xl ring-2 ring-[var(--color-brand)]/15 shadow-[0_8px_24px_rgba(0,0,0,0.10)]" />
-                <h1 className="mb-3 text-[30px] font-semibold leading-tight tracking-normal text-[var(--color-text-primary)]" style={{ fontFamily: 'var(--font-headline)' }}>
+                <img src="/app-icon.png" alt="AgentCode" className="empty-hero-mark mb-7 h-20 w-20 rounded-3xl ring-1 ring-[var(--color-brand)]/20" />
+                <h1 className="mb-3 max-w-[560px] text-[34px] font-semibold leading-tight tracking-normal text-[var(--color-text-primary)]" style={{ fontFamily: 'var(--font-headline)' }}>
                   {t('empty.title')}
                 </h1>
-                <p className="mx-auto max-w-md text-sm leading-6 text-[var(--color-text-secondary)]" style={{ fontFamily: 'var(--font-body)' }}>
+                <p className="mx-auto max-w-lg text-sm leading-6 text-[var(--color-text-secondary)]" style={{ fontFamily: 'var(--font-body)' }}>
                   {t('empty.subtitle')}
                 </p>
               </>

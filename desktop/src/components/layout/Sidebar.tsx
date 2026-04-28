@@ -126,16 +126,16 @@ export function Sidebar() {
   return (
     <aside
       onMouseDown={handleSidebarDrag}
-      className="sidebar-panel relative h-full flex flex-col bg-[var(--color-surface-sidebar)] border-r border-[var(--color-border)] select-none"
+      className="sidebar-panel relative h-full flex flex-col bg-[var(--color-surface-sidebar)] border-r border-[var(--color-border)] shadow-[inset_-1px_0_0_var(--color-border)] select-none"
       data-state={sidebarOpen ? 'open' : 'closed'}
       aria-label="Sidebar"
     >
       <div className={`px-3 pb-2 ${isTauri && !isWindows ? 'pt-[44px]' : 'pt-3'}`}>
         <div className={`flex ${sidebarOpen ? 'items-center justify-between gap-3' : 'flex-col items-center gap-2'}`}>
           <div className={`flex min-w-0 items-center ${sidebarOpen ? 'gap-2.5' : 'justify-center'}`}>
-            <img src="/app-icon.png" alt="" className="h-8 w-8 flex-shrink-0 rounded-lg" />
+            <img src="/app-icon.png" alt="" className="h-9 w-9 flex-shrink-0 rounded-xl shadow-[0_6px_16px_rgba(0,0,0,0.10)] ring-1 ring-[var(--color-brand)]/15" />
             <span
-              className={`sidebar-copy ${sidebarOpen ? 'sidebar-copy--visible' : 'sidebar-copy--hidden'} text-[13px] font-semibold tracking-tight text-[var(--color-text-primary)]`}
+              className={`sidebar-copy ${sidebarOpen ? 'sidebar-copy--visible' : 'sidebar-copy--hidden'} text-[14px] font-semibold tracking-tight text-[var(--color-text-primary)]`}
               style={{ fontFamily: 'var(--font-headline)' }}
             >
               AgentCode
@@ -208,10 +208,10 @@ export function Sidebar() {
         <>
           <div
             data-testid="sidebar-project-filter-section"
-            className="sidebar-section sidebar-section--visible relative z-20 flex-none px-3 pb-2"
+            className="sidebar-section sidebar-section--visible relative z-20 flex-none px-3 pb-3"
             style={{ overflow: 'visible' }}
           >
-            <div className="flex h-9 items-center rounded-[var(--radius-lg)] border border-[var(--color-sidebar-search-border)] bg-[var(--color-sidebar-search-bg)] pl-1.5 pr-3 shadow-[var(--shadow-sidebar-filter)] transition-colors focus-within:border-[var(--color-border-focus)]">
+            <div className="flex h-10 items-center rounded-[14px] border border-[var(--color-sidebar-search-border)] bg-[var(--color-sidebar-search-bg)] pl-1.5 pr-3 shadow-[var(--shadow-sidebar-filter)] transition-[border-color,box-shadow,background-color] focus-within:border-[var(--color-border-focus)] focus-within:shadow-[var(--shadow-focus-ring)]">
               <ProjectFilter variant="embedded" />
               <span className="mx-2 h-4 w-px bg-[var(--color-border)]/80" aria-hidden="true" />
               <span className="pointer-events-none flex shrink-0 items-center text-[var(--color-text-tertiary)]">
@@ -283,10 +283,10 @@ export function Sidebar() {
                             }}
                             onContextMenu={(e) => handleContextMenu(e, session.id)}
                             className={`
-                              group w-full rounded-[var(--radius-lg)] px-3 py-2 text-left text-sm transition-colors duration-200
+                              group relative w-full rounded-[14px] px-3 py-2.5 text-left text-sm transition-[background-color,box-shadow,color,transform] duration-200
                               ${session.id === activeTabId
-                                ? 'bg-[var(--color-sidebar-item-active)] text-[var(--color-text-primary)] shadow-[0_1px_2px_rgba(0,0,0,0.05)] ring-1 ring-[var(--color-sidebar-item-active-border)]'
-                                : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-sidebar-item-hover)]'
+                                ? 'bg-[var(--color-sidebar-item-active)] text-[var(--color-text-primary)] shadow-[0_8px_20px_rgba(15,23,42,0.07)] ring-1 ring-[var(--color-sidebar-item-active-border)]'
+                                : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-sidebar-item-hover)] hover:text-[var(--color-text-primary)] hover:translate-x-[1px]'
                               }
                             `}
                           >
@@ -419,11 +419,11 @@ function NavItem({
       aria-label={label}
       title={collapsed ? label : undefined}
       className={`
-        flex items-center transition-colors duration-200
-        ${collapsed ? 'h-10 w-10 justify-center rounded-[var(--radius-md)] px-0 py-0' : 'w-full gap-2.5 rounded-[12px] px-3 py-2.5 text-sm'}
+        flex items-center transition-[background-color,box-shadow,color,transform] duration-200
+        ${collapsed ? 'h-10 w-10 justify-center rounded-[var(--radius-lg)] px-0 py-0' : 'w-full gap-2.5 rounded-[14px] px-3 py-2.5 text-sm'}
         ${active
-          ? 'bg-[var(--color-sidebar-item-active)] font-medium text-[var(--color-text-primary)]'
-          : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-sidebar-item-hover)] hover:text-[var(--color-text-primary)]'
+          ? 'bg-[var(--color-sidebar-item-active)] font-medium text-[var(--color-text-primary)] shadow-[0_8px_20px_rgba(15,23,42,0.07)] ring-1 ring-[var(--color-sidebar-item-active-border)]'
+          : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-sidebar-item-hover)] hover:text-[var(--color-text-primary)] hover:translate-x-[1px]'
         }
       `}
     >

@@ -233,18 +233,18 @@ export function TabBar() {
   return (
     <div
       data-testid="tab-bar"
-      className="flex items-stretch bg-[var(--color-surface)] min-h-[40px] select-none border-b border-[var(--color-border)]"
+      className="flex min-h-[44px] items-end border-b border-[var(--color-border)] bg-[color-mix(in_srgb,var(--color-canvas)_88%,var(--color-surface)_12%)] px-1 pt-1 select-none"
     >
 
       {canScrollLeft && (
-        <button onClick={() => scroll('left')} className="flex-shrink-0 w-7 h-10 flex items-center justify-center text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)]">
+        <button onClick={() => scroll('left')} className="flex h-10 w-7 flex-shrink-0 items-center justify-center rounded-[var(--radius-md)] text-[var(--color-text-tertiary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)]">
           <span className="material-symbols-outlined text-[16px]">chevron_left</span>
         </button>
       )}
 
       <div
         ref={scrollRef}
-        className="tab-bar-hit-area flex-1 flex items-stretch overflow-x-hidden"
+        className="tab-bar-hit-area flex-1 flex items-end overflow-x-hidden"
         onDragOver={(e) => e.preventDefault()}
         onMouseDown={handleScrollRegionMouseDown}
       >
@@ -275,7 +275,7 @@ export function TabBar() {
       )}
 
       {canScrollRight && (
-        <button onClick={() => scroll('right')} className="flex-shrink-0 w-7 h-10 flex items-center justify-center text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)]">
+        <button onClick={() => scroll('right')} className="flex h-10 w-7 flex-shrink-0 items-center justify-center rounded-[var(--radius-md)] text-[var(--color-text-tertiary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)]">
           <span className="material-symbols-outlined text-[16px]">chevron_right</span>
         </button>
       )}
@@ -374,12 +374,12 @@ const TabItem = forwardRef<HTMLDivElement, {
       onMouseDown={onMouseDown}
       onContextMenu={onContextMenu}
       className={`
-        tab-bar-hit-area group flex-shrink-0 flex items-center gap-1.5 px-3 min-h-10 relative
+        tab-bar-hit-area group relative mb-[-1px] flex h-10 flex-shrink-0 items-center gap-1.5 px-3
         ${isDragging ? 'z-20 cursor-grabbing' : 'cursor-grab'}
         transition-[background-color,box-shadow,opacity,transform] duration-150 ease-out
         ${isActive
-          ? 'bg-[var(--color-surface-container-low)] shadow-[inset_0_-2px_0_var(--color-brand)]'
-          : 'bg-transparent hover:bg-[var(--color-surface-hover)]'
+          ? 'rounded-t-[14px] border border-[var(--color-border)] border-b-[var(--color-surface)] bg-[var(--color-surface)] shadow-[0_-6px_20px_rgba(15,23,42,0.05)]'
+          : 'rounded-[12px] bg-transparent hover:bg-[var(--color-surface-hover)]'
         }
         ${isDragging ? 'opacity-95 shadow-[0_10px_24px_rgba(0,0,0,0.18)] ring-1 ring-[var(--color-border)]' : ''}
         ${isDragOver ? 'before:absolute before:left-0 before:top-[4px] before:bottom-[4px] before:w-[3px] before:bg-[var(--color-brand)] before:rounded-full before:shadow-[0_0_0_1px_rgba(255,255,255,0.25)]' : ''}
@@ -403,7 +403,7 @@ const TabItem = forwardRef<HTMLDivElement, {
         <span className="material-symbols-outlined text-[14px] flex-shrink-0 text-[var(--color-text-tertiary)]">schedule</span>
       )}
 
-      <span className={`flex-1 truncate text-xs ${isActive ? 'text-[var(--color-text-primary)] font-medium' : 'text-[var(--color-text-secondary)]'}`}>
+      <span className={`flex-1 truncate text-xs ${isActive ? 'font-semibold text-[var(--color-text-primary)]' : 'text-[var(--color-text-secondary)]'}`}>
         {tab.title || 'Untitled'}
       </span>
 
@@ -412,7 +412,7 @@ const TabItem = forwardRef<HTMLDivElement, {
         aria-label={`Close ${tab.title || 'Untitled'}`}
         onMouseDown={(e) => { e.stopPropagation() }}
         onClick={(e) => { e.stopPropagation(); onClose() }}
-        className="flex-shrink-0 -mr-0.5 inline-flex h-3 w-3 items-center justify-center bg-transparent p-0 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-[opacity,color] text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] focus-visible:outline-none"
+        className="inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-transparent p-0 text-[var(--color-text-tertiary)] opacity-0 transition-[background-color,opacity,color] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)] focus-visible:opacity-100 focus-visible:outline-none group-hover:opacity-100"
       >
         <span className="material-symbols-outlined text-[11px] leading-none">close</span>
       </button>

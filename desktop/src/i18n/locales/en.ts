@@ -855,7 +855,8 @@ export const en = {
   'app.serverLogs': 'Server logs',
   'app.copyDiagnostics': 'Copy diagnostics',
   'app.copiedDiagnostics': 'Copied',
-  'app.launching': 'Launching local workspace...',
+  'app.launching': 'Preparing local workspace',
+  'app.launchingDetail': 'Connecting services, restoring sessions, and loading project context',
 
   // ─── Error Codes ──────────────────────────────────────
   'error.CLI_NOT_RUNNING': 'CLI process is not running. The session may have ended or the process crashed.',

@@ -1,16 +1,74 @@
 <svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
-
-<defs>
-  <linearGradient id="accent" x1="684" y1="298" x2="834" y2="726" gradientUnits="userSpaceOnUse">
-    <stop stop-color="#F6B34C"/>
-    <stop offset="1" stop-color="#FF8A2A"/>
-  </linearGradient>
-</defs>
-
-<g>
-  <path d="M310 350 L510 512 L310 674" stroke="#20242E" stroke-width="64" stroke-linecap="round" stroke-linejoin="round"/>
-  <rect x="440" y="690" width="120" height="48" rx="20" fill="#20242E"/>
-  <path d="M684 298 H834 V726 H684" stroke="url(#accent)" stroke-width="64" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M592 334L608.8 385.2L660 402L608.8 418.8L592 470L575.2 418.8L524 402L575.2 385.2L592 334Z" fill="#F5A623"/>
-</g>
+  <title>AgentCode App Icon</title>
+  <defs>
+    <linearGradient id="surface" x1="160" y1="116" x2="884" y2="908" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#263136"/>
+      <stop offset="0.52" stop-color="#151B1E"/>
+      <stop offset="1" stop-color="#22201D"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="126" y1="136" x2="894" y2="894" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#46E1D0"/>
+      <stop offset="0.48" stop-color="#A9B2A7"/>
+      <stop offset="1" stop-color="#FF9F24"/>
+    </linearGradient>
+    <linearGradient id="terminal" x1="290" y1="354" x2="574" y2="686" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8CEBE2"/>
+      <stop offset="0.52" stop-color="#30B89E"/>
+      <stop offset="1" stop-color="#00D6B2"/>
+    </linearGradient>
+    <linearGradient id="circuit" x1="544" y1="176" x2="842" y2="842" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFE19B"/>
+      <stop offset="0.48" stop-color="#FFB236"/>
+      <stop offset="1" stop-color="#C56F10"/>
+    </linearGradient>
+    <radialGradient id="core" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(606 512) rotate(90) scale(68)">
+      <stop stop-color="#6FFFF1"/>
+      <stop offset="0.42" stop-color="#12C7BA"/>
+      <stop offset="1" stop-color="#061617"/>
+    </radialGradient>
+    <filter id="shadow" x="48" y="48" width="928" height="928" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="30" stdDeviation="34" flood-color="#000000" flood-opacity="0.38"/>
+    </filter>
+    <filter id="softGlow" x="160" y="128" width="760" height="768" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.07 0 0 0 0 0.90 0 0 0 0 0.78 0 0 0 0.44 0"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <clipPath id="clip">
+      <rect x="76" y="76" width="872" height="872" rx="154"/>
+    </clipPath>
+  </defs>
+  <rect width="1024" height="1024" fill="#020403"/>
+  <g filter="url(#shadow)">
+    <rect x="76" y="76" width="872" height="872" rx="154" fill="url(#surface)"/>
+    <rect x="76" y="76" width="872" height="872" rx="154" stroke="url(#rim)" stroke-width="22"/>
+    <rect x="116" y="116" width="792" height="792" rx="116" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="10"/>
+  </g>
+  <g clip-path="url(#clip)">
+    <path d="M118 154C280 80 584 78 906 138" stroke="#FFFFFF" stroke-opacity="0.16" stroke-width="36"/>
+    <path d="M116 902C312 964 610 966 904 888" stroke="#000000" stroke-opacity="0.22" stroke-width="44"/>
+  </g>
+  <g filter="url(#softGlow)">
+    <path d="M292 360L492 512L292 664" stroke="#06100F" stroke-width="116" stroke-linecap="round" stroke-linejoin="round" opacity="0.62"/>
+    <path d="M294 360L494 512L294 664" stroke="url(#terminal)" stroke-width="82" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M446 736H534" stroke="#06100F" stroke-width="72" stroke-linecap="round" opacity="0.58"/>
+    <path d="M446 736H534" stroke="url(#terminal)" stroke-width="42" stroke-linecap="round"/>
+  </g>
+  <g stroke="url(#circuit)" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M606 512H708V360L792 318" stroke-width="56"/>
+    <path d="M708 512H810" stroke-width="56"/>
+    <path d="M708 512V666L606 748" stroke-width="56"/>
+    <path d="M606 512L606 258" stroke-width="56"/>
+  </g>
+  <g fill="#151817" stroke="url(#circuit)" stroke-width="28">
+    <circle cx="606" cy="258" r="50"/>
+    <circle cx="810" cy="512" r="50"/>
+    <circle cx="606" cy="748" r="50"/>
+    <circle cx="792" cy="318" r="50"/>
+  </g>
+  <circle cx="606" cy="512" r="58" fill="#101817" stroke="#9CA39B" stroke-width="16"/>
+  <circle cx="606" cy="512" r="38" fill="url(#core)"/>
 </svg>

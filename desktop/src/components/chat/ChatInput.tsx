@@ -504,12 +504,12 @@ export function ChatInput({ variant = 'default' }: ChatInputProps) {
   const slashCommandsLabel = isHeroComposer ? t('empty.slashCommands') : t('chat.slashCommands')
 
   return (
-    <div className={isHeroComposer ? 'bg-[var(--color-surface)] px-8 pb-5' : 'bg-[var(--color-surface)] px-4 py-4'}>
-      <div className={isHeroComposer ? 'mx-auto flex w-full max-w-3xl flex-col gap-2' : 'mx-auto max-w-[900px]'}>
+    <div className={isHeroComposer ? 'bg-transparent px-6 pb-6 sm:px-8' : 'bg-[var(--color-canvas)] px-4 py-4'}>
+      <div className={isHeroComposer ? 'mx-auto flex w-full max-w-[820px] flex-col gap-2' : 'mx-auto max-w-[900px]'}>
         <div
           className={isHeroComposer
-            ? 'glass-panel relative flex flex-col gap-3 rounded-[18px] p-4 transition-colors'
-            : 'glass-panel relative rounded-[18px] p-4 transition-colors'}
+            ? 'composer-panel glass-panel relative flex flex-col gap-3 rounded-[20px] p-4 transition-colors'
+            : 'composer-panel glass-panel relative rounded-[18px] p-4 transition-colors'}
           onDragOver={(event) => event.preventDefault()}
           onDrop={handleDrop}
         >
@@ -677,7 +677,7 @@ export function ChatInput({ variant = 'default' }: ChatInputProps) {
                 onClick={!isMemberSession && isActive ? () => stopGeneration(activeTabId!) : handleSubmit}
                 disabled={!isMemberSession && isActive ? false : !canSubmit}
                 title={!isMemberSession && isActive ? t('chat.stopTitle') : undefined}
-                className={`flex w-[112px] items-center justify-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all hover:brightness-105 disabled:opacity-30 ${
+                className={`flex min-h-8 w-[112px] items-center justify-center gap-1 rounded-[var(--radius-lg)] px-3 py-1.5 text-xs font-semibold transition-all hover:brightness-105 disabled:opacity-30 ${
                   !isMemberSession && isActive
                     ? 'bg-[var(--color-error-container)] text-[var(--color-on-error-container)]'
                     : 'bg-[image:var(--gradient-btn-primary)] text-[var(--color-btn-primary-fg)] shadow-[var(--shadow-button-primary)]'

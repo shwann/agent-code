@@ -79,9 +79,10 @@ export function AppShell() {
 
   if (!ready) {
     return (
-      <div className="h-screen flex items-center justify-center bg-[var(--color-surface)] text-[var(--color-text-secondary)]">
-        {t('app.launching')}
-      </div>
+      <StartupLoadingView
+        title={t('app.launching')}
+        detail={t('app.launchingDetail')}
+      />
     )
   }
 
@@ -97,13 +98,35 @@ export function AppShell() {
       <main
         id="content-area"
         data-sidebar-state={sidebarOpen ? 'open' : 'closed'}
-        className="min-w-0 flex-1 flex flex-col overflow-hidden bg-[var(--color-surface)]"
+        className="app-canvas min-w-0 flex-1 flex flex-col overflow-hidden"
       >
         <TabBar />
         <ContentRouter />
       </main>
       <ToastContainer />
       <UpdateChecker />
+    </div>
+  )
+}
+
+function StartupLoadingView({ title, detail }: { title: string; detail: string }) {
+  return (
+    <div className="startup-loader-screen">
+      <div className="startup-loader" role="status" aria-live="polite">
+        <div className="startup-loader-mark" aria-hidden="true">
+          <img src="/app-icon.png" alt="" className="startup-loader-logo" />
+        </div>
+
+        <div className="startup-loader-copy">
+          <div className="startup-loader-title-row">
+            <span className="startup-loader-title">{title}</span>
+            <span className="startup-loader-dot" />
+            <span className="startup-loader-dot startup-loader-dot--delay-1" />
+            <span className="startup-loader-dot startup-loader-dot--delay-2" />
+          </div>
+          <div className="startup-loader-detail">{detail}</div>
+        </div>
+      </div>
     </div>
   )
 }

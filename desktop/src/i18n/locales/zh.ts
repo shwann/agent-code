@@ -857,7 +857,8 @@ export const zh: Record<TranslationKey, string> = {
   'app.serverLogs': '服务日志',
   'app.copyDiagnostics': '复制诊断信息',
   'app.copiedDiagnostics': '已复制',
-  'app.launching': '正在启动本地工作区...',
+  'app.launching': '正在准备本地工作区',
+  'app.launchingDetail': '连接服务、恢复会话并加载项目上下文',
 
   // ─── Error Codes ──────────────────────────────────────
   'error.CLI_NOT_RUNNING': 'CLI 进程未运行。会话可能已结束或进程已崩溃。',

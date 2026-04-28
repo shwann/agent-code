@@ -130,6 +130,7 @@
   --color-surface-variant: #EFEFEF;
 
   --color-background: #FFFFFF;
+  --color-canvas: #FAFAFB;
 
   --color-outline: #8A8A8A;
   --color-outline-variant: #E3E3E3;
@@ -181,7 +182,15 @@
   --color-sidebar-item-hover: rgba(0, 0, 0, 0.055);
   --color-sidebar-item-active: #FFFFFF;
   --color-sidebar-item-active-border: rgba(16, 163, 127, 0.22);
-  --sidebar-panel-bg-image: none;
+  --sidebar-panel-bg-image:
+    linear-gradient(180deg, rgba(16, 163, 127, 0.05), transparent 34%),
+    linear-gradient(145deg, rgba(37, 99, 235, 0.045), transparent 48%);
+  --empty-canvas-background:
+    linear-gradient(135deg, rgba(16, 163, 127, 0.075), transparent 30%),
+    linear-gradient(225deg, rgba(37, 99, 235, 0.06), transparent 36%),
+    repeating-linear-gradient(0deg, rgba(13, 13, 13, 0.035) 0 1px, transparent 1px 56px),
+    repeating-linear-gradient(90deg, rgba(13, 13, 13, 0.028) 0 1px, transparent 1px 56px),
+    var(--color-canvas);
 
   /* Border aliases */
   --color-border: #E3E3E3;
@@ -219,6 +228,7 @@
   --color-overlay-scrim: rgba(0, 0, 0, 0.48);
   --color-surface-glass: rgba(255, 255, 255, 0.96);
   --color-surface-glass-border: rgba(0, 0, 0, 0.12);
+  --shadow-panel: 0 18px 44px rgba(15, 23, 42, 0.10), 0 2px 8px rgba(15, 23, 42, 0.06);
 
   /* Code + diff */
   --color-code-bg: #F7F7F8;
@@ -294,6 +304,7 @@
   --color-surface-container-lowest: #171717;
   --color-surface-variant: #2F3037;
   --color-background: #212121;
+  --color-canvas: #1F2023;
 
   --color-outline: #8E8EA0;
   --color-outline-variant: #3A3A3A;
@@ -325,7 +336,15 @@
   --color-sidebar-item-hover: rgba(255, 255, 255, 0.04);
   --color-sidebar-item-active: rgba(255, 255, 255, 0.06);
   --color-sidebar-item-active-border: rgba(16, 163, 127, 0.18);
-  --sidebar-panel-bg-image: none;
+  --sidebar-panel-bg-image:
+    linear-gradient(180deg, rgba(16, 163, 127, 0.07), transparent 32%),
+    linear-gradient(145deg, rgba(138, 180, 248, 0.06), transparent 48%);
+  --empty-canvas-background:
+    linear-gradient(135deg, rgba(16, 163, 127, 0.10), transparent 31%),
+    linear-gradient(225deg, rgba(138, 180, 248, 0.06), transparent 38%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 56px),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 56px),
+    var(--color-canvas);
 
   --color-border: rgba(255, 255, 255, 0.10);
   --color-border-focus: rgba(16, 163, 127, 0.70);
@@ -353,6 +372,7 @@
   --color-overlay-scrim: rgba(6, 6, 6, 0.56);
   --color-surface-glass: rgba(47, 48, 55, 0.96);
   --color-surface-glass-border: rgba(255, 255, 255, 0.14);
+  --shadow-panel: 0 20px 52px rgba(0, 0, 0, 0.42), 0 2px 10px rgba(0, 0, 0, 0.28);
 
   --color-code-bg: #171717;
   --color-code-fg: #ECECF1;
@@ -460,13 +480,46 @@ button, input, textarea, select, a, [role="button"] {
 .glass-panel {
   background: var(--color-surface-glass);
   border: 1px solid var(--color-surface-glass-border);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(18px) saturate(1.04);
+  -webkit-backdrop-filter: blur(18px) saturate(1.04);
+  box-shadow: var(--shadow-panel);
 }
 
 .glass-panel:focus-within {
   box-shadow: var(--shadow-focus-ring), var(--shadow-dropdown);
+}
+
+.app-canvas {
+  background: var(--color-canvas);
+}
+
+.empty-stage {
+  background: var(--empty-canvas-background);
+}
+
+.empty-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 68%, transparent), transparent 42%),
+    linear-gradient(0deg, color-mix(in srgb, var(--color-surface) 82%, transparent), transparent 28%);
+}
+
+.empty-stage > * {
+  position: relative;
+  z-index: 1;
+}
+
+.empty-hero-mark {
+  box-shadow:
+    0 20px 46px color-mix(in srgb, var(--color-brand) 22%, transparent),
+    0 2px 10px rgba(0, 0, 0, 0.10);
+}
+
+.composer-panel {
+  border-color: color-mix(in srgb, var(--color-surface-glass-border) 78%, var(--color-brand) 22%);
 }
 
 .sidebar-shell {
@@ -672,6 +725,116 @@ button, input, textarea, select, a, [role="button"] {
 .animate-shimmer { animation: shimmer 1.5s ease-in-out infinite; }
 .animate-spin { animation: spin 1s linear infinite; }
 .animate-pulse-dot { animation: pulse-dot 1.5s ease-in-out infinite; }
+
+/* Startup loading screen */
+.startup-loader-screen {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+}
+
+.startup-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-width: min(320px, calc(100vw - 48px));
+  min-height: 52px;
+}
+
+.startup-loader-mark {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+
+.startup-loader-logo {
+  width: 28px;
+  height: 28px;
+  display: block;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--color-brand) 16%, transparent);
+  animation: startup-logo-spin 1.15s linear infinite;
+}
+
+.startup-loader-mark::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background:
+    conic-gradient(from 0deg, transparent 0deg, color-mix(in srgb, var(--color-brand) 88%, white) 84deg, transparent 132deg, transparent 360deg);
+  -webkit-mask: radial-gradient(circle, transparent 17px, #000 18px);
+  mask: radial-gradient(circle, transparent 17px, #000 18px);
+  animation: startup-logo-spin 0.82s linear infinite;
+}
+
+.startup-loader-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+
+.startup-loader-title-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  min-height: 28px;
+}
+
+.startup-loader-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.startup-loader-detail {
+  max-width: min(280px, calc(100vw - 96px));
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--color-text-tertiary);
+}
+
+.startup-loader-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--color-brand);
+  animation: startup-dot 1.25s ease-in-out infinite;
+}
+
+.startup-loader-dot--delay-1 {
+  animation-delay: 0.16s;
+}
+
+.startup-loader-dot--delay-2 {
+  animation-delay: 0.32s;
+}
+
+@keyframes startup-logo-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes startup-dot {
+  0%, 80%, 100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  40% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
 
 /* Progress bar */
 @keyframes progress-fill {
