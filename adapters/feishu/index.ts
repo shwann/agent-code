@@ -46,10 +46,10 @@ const larkClient = new Lark.Client({
   domain: Lark.Domain.Feishu,
 })
 
-const bridge = new WsBridge(config.serverUrl, 'feishu')
+const bridge = new WsBridge(config.serverUrl, 'feishu', config.serverAuthToken)
 const dedup = new MessageDedup()
 const sessionStore = new SessionStore()
-const httpClient = new AdapterHttpClient(config.serverUrl)
+const httpClient = new AdapterHttpClient(config.serverUrl, config.serverAuthToken)
 
 // Attachment plumbing — shared by inbound (download) and outbound (upload) paths.
 const attachmentStore = new AttachmentStore()

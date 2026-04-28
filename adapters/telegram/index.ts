@@ -40,10 +40,10 @@ if (!config.telegram.botToken) {
 }
 
 const bot = new Bot(config.telegram.botToken)
-const bridge = new WsBridge(config.serverUrl, 'tg')
+const bridge = new WsBridge(config.serverUrl, 'tg', config.serverAuthToken)
 const dedup = new MessageDedup()
 const sessionStore = new SessionStore()
-const httpClient = new AdapterHttpClient(config.serverUrl)
+const httpClient = new AdapterHttpClient(config.serverUrl, config.serverAuthToken)
 const attachmentStore = new AttachmentStore()
 const media = new TelegramMediaService(bot, attachmentStore)
 attachmentStore.gc().catch((err) => {

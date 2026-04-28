@@ -24,14 +24,23 @@ export type SessionTask = {
 
 export class AdapterHttpClient {
   readonly httpBaseUrl: string
+  private readonly authToken: string
   /** Default timeout for HTTP requests (30 seconds) */
   private static readonly DEFAULT_TIMEOUT_MS = 30_000
 
-  constructor(wsUrl: string) {
+  constructor(wsUrl: string, authToken = '') {
     this.httpBaseUrl = wsUrl
       .replace(/^ws:/, 'http:')
       .replace(/^wss:/, 'https:')
       .replace(/\/$/, '')
+    this.authToken = authToken
+  }
+
+  private headers(extra?: HeadersInit): HeadersInit {
+    return {
+      ...(this.authToken ? { Authorization: `Bearer ${this.authToken}` } : {}),
+      ...(extra ?? {}),
+    }
   }
 
   /** Create an AbortController with timeout */
@@ -49,7 +58,7 @@ export class AdapterHttpClient {
     try {
       const res = await fetch(`${this.httpBaseUrl}/api/sessions`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: this.headers({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ workDir }),
         signal: controller.signal,
       })
@@ -68,6 +77,7 @@ export class AdapterHttpClient {
     const { controller, timer } = this.createTimeoutController()
     try {
       const res = await fetch(`${this.httpBaseUrl}/api/sessions/recent-projects`, {
+        headers: this.headers(),
         signal: controller.signal,
       })
       if (!res.ok) {
@@ -114,6 +124,7 @@ export class AdapterHttpClient {
     const { controller, timer } = this.createTimeoutController()
     try {
       const res = await fetch(`${this.httpBaseUrl}/api/sessions/${encodeURIComponent(sessionId)}/git-info`, {
+        headers: this.headers(),
         signal: controller.signal,
       })
       if (!res.ok) {
@@ -130,6 +141,7 @@ export class AdapterHttpClient {
     const { controller, timer } = this.createTimeoutController()
     try {
       const res = await fetch(`${this.httpBaseUrl}/api/tasks/lists/${encodeURIComponent(sessionId)}`, {
+        headers: this.headers(),
         signal: controller.signal,
       })
       if (!res.ok) {

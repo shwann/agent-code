@@ -27,6 +27,23 @@ services:
     expose:
       - "3456"
 
+  adapters:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+      args:
+        NPM_CONFIG_REGISTRY: ${NPM_CONFIG_REGISTRY:-https://registry.npmjs.org/}
+    restart: unless-stopped
+    environment:
+      ADAPTER_SERVER_URL: ws://app:3456
+      SERVER_AUTH_TOKEN: ${SERVER_AUTH_TOKEN:?set SERVER_AUTH_TOKEN in .env}
+      TZ: ${TZ:-Asia/Shanghai}
+    volumes:
+      - claude_data:/root/.claude
+    depends_on:
+      - app
+    command: ["bun", "run", "desktop/sidecars/claude-sidecar.ts", "adapters", "--feishu"]
+
   web:
     build:
       context: .

@@ -38,6 +38,20 @@ describe('AdapterHttpClient', () => {
     expect(body.workDir).toBe('/path/to/project')
   })
 
+  it('sends Authorization header when auth token is configured', async () => {
+    const authedClient = new AdapterHttpClient('ws://127.0.0.1:3456', 'secret-token')
+    globalThis.fetch = mock(() =>
+      Promise.resolve(new Response(JSON.stringify({ projects: [] }), {
+        headers: { 'Content-Type': 'application/json' },
+      }))
+    ) as any
+
+    await authedClient.listRecentProjects()
+
+    const call = (globalThis.fetch as any).mock.calls[0]
+    expect(call[1].headers.Authorization).toBe('Bearer secret-token')
+  })
+
   it('listRecentProjects calls GET /api/sessions/recent-projects', async () => {
     const mockProjects = [
       { projectName: 'my-app', realPath: '/home/user/my-app', sessionCount: 3 },

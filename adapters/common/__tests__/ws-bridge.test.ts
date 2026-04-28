@@ -1,6 +1,23 @@
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test'
 import { WsBridge } from '../ws-bridge.js'
 import { WebSocketServer, type WebSocket as WsServerSocket } from 'ws'
+import net from 'node:net'
+
+async function getFreePort(): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const server = net.createServer()
+    server.once('error', reject)
+    server.listen(0, '127.0.0.1', () => {
+      const address = server.address()
+      if (!address || typeof address === 'string') {
+        server.close(() => reject(new Error('Failed to allocate a free port')))
+        return
+      }
+      const port = address.port
+      server.close(() => resolve(port))
+    })
+  })
+}
 
 describe('WsBridge', () => {
   let bridge: WsBridge
@@ -65,20 +82,19 @@ describe('WsBridge', () => {
 // ---------------------------------------------------------------------------
 
 describe('WsBridge: handler serialization', () => {
-  let server: WebSocketServer
+  let server: WebSocketServer | undefined
   let port: number
   let connections: WsServerSocket[]
   let serverUrl: string
 
   beforeEach(async () => {
     connections = []
-    // port 0 → let the OS pick a free one
-    server = new WebSocketServer({ port: 0 })
+    port = await getFreePort()
+    server = new WebSocketServer({ port })
     server.on('connection', (ws) => {
       connections.push(ws)
     })
-    await new Promise<void>((resolve) => server.on('listening', () => resolve()))
-    port = (server.address() as { port: number }).port
+    await new Promise<void>((resolve) => server!.on('listening', () => resolve()))
     serverUrl = `ws://127.0.0.1:${port}`
   })
 
@@ -88,6 +104,7 @@ describe('WsBridge: handler serialization', () => {
     for (const ws of connections) {
       try { ws.terminate() } catch {}
     }
+    if (!server) return
     await new Promise<void>((resolve) => {
       const t = setTimeout(() => resolve(), 500) // hard cap
       server.close(() => {
@@ -133,6 +150,22 @@ describe('WsBridge: handler serialization', () => {
       'start:2', 'end:2',
       'start:3', 'end:3',
     ])
+
+    bridge.destroy()
+  })
+
+  it('passes Authorization header when auth token is configured', async () => {
+    let authorization: string | undefined
+    server!.once('connection', (_ws, req) => {
+      authorization = req.headers.authorization
+    })
+
+    const bridge = new WsBridge(serverUrl, 'test', 'secret-token')
+    bridge.connectSession('chat-auth', 'sess-auth')
+    const ok = await bridge.waitForOpen('chat-auth')
+
+    expect(ok).toBe(true)
+    expect(authorization).toBe('Bearer secret-token')
 
     bridge.destroy()
   })

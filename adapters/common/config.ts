@@ -40,6 +40,7 @@ export type FeishuConfig = {
 
 export type AdapterConfig = {
   serverUrl: string
+  serverAuthToken: string
   defaultProjectDir: string
   pairing: PairingState
   telegram: TelegramConfig
@@ -70,6 +71,7 @@ export function loadConfig(): AdapterConfig {
 
   return {
     serverUrl: process.env.ADAPTER_SERVER_URL || file.serverUrl || 'ws://127.0.0.1:3456',
+    serverAuthToken: process.env.ADAPTER_SERVER_AUTH_TOKEN || process.env.SERVER_AUTH_TOKEN || '',
     defaultProjectDir: file.defaultProjectDir || '',
     pairing: {
       code: pairing.code ?? null,

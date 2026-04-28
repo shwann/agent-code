@@ -12,6 +12,9 @@ RUN apt-get update \
 COPY package.json bunfig.toml ./
 RUN bun install
 
+COPY adapters/package.json adapters/bun.lock ./adapters/
+RUN cd adapters && bun install --frozen-lockfile
+
 COPY . .
 
 ENV NODE_ENV=production \

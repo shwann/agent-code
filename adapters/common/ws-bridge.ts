@@ -50,12 +50,14 @@ export class WsBridge {
   private handlerChains = new Map<string, Promise<void>>()
   private serverUrl: string
   private platform: string
+  private authToken: string
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null
   private destroyed = false
 
-  constructor(serverUrl: string, platform: string) {
+  constructor(serverUrl: string, platform: string, authToken = '') {
     this.serverUrl = serverUrl.replace(/\/$/, '')
     this.platform = platform
+    this.authToken = authToken
     this.startHeartbeat()
   }
 
@@ -150,7 +152,10 @@ export class WsBridge {
 
   private connect(chatId: string, sessionId: string): void {
     const url = `${this.serverUrl}/ws/${sessionId}`
-    const ws = new WebSocket(url)
+    const ws = new WebSocket(
+      url,
+      this.authToken ? { headers: { Authorization: `Bearer ${this.authToken}` } } : undefined,
+    )
 
     // Cancel any pending reconnect timer for this chatId
     const prev = this.sessions.get(chatId)
