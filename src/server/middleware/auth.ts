@@ -14,17 +14,22 @@ function getExpectedToken(): string | undefined {
   )
 }
 
-export function validateAuth(req: Request): { valid: boolean; error?: string } {
+export function validateAuth(req: Request, url?: URL): { valid: boolean; error?: string } {
   const authHeader = req.headers.get('Authorization')
+  const queryToken = url?.searchParams.get('authToken')?.trim()
 
-  if (!authHeader) {
+  if (!authHeader && !queryToken) {
     return { valid: false, error: 'Missing Authorization header' }
   }
 
-  const [scheme, token] = authHeader.split(' ')
+  let token = queryToken
+  if (authHeader) {
+    const [scheme, headerToken] = authHeader.split(' ')
 
-  if (scheme !== 'Bearer' || !token) {
-    return { valid: false, error: 'Invalid Authorization format. Use: Bearer <token>' }
+    if (scheme !== 'Bearer' || !headerToken) {
+      return { valid: false, error: 'Invalid Authorization format. Use: Bearer <token>' }
+    }
+    token = headerToken
   }
 
   const expectedToken = getExpectedToken()
@@ -45,8 +50,8 @@ export function validateAuth(req: Request): { valid: boolean; error?: string } {
 /**
  * Helper to check auth and return 401 if invalid
  */
-export function requireAuth(req: Request): Response | null {
-  const { valid, error } = validateAuth(req)
+export function requireAuth(req: Request, url?: URL): Response | null {
+  const { valid, error } = validateAuth(req, url)
   if (!valid) {
     return Response.json({ error: 'Unauthorized', message: error }, { status: 401 })
   }

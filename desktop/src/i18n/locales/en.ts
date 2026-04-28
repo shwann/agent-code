@@ -857,6 +857,12 @@ export const en = {
   'app.copiedDiagnostics': 'Copied',
   'app.launching': 'Preparing local workspace',
   'app.launchingDetail': 'Connecting services, restoring sessions, and loading project context',
+  'app.authRequiredTitle': 'Local server password required',
+  'app.authRequiredHint': 'Enter the value of SERVER_AUTH_TOKEN to connect to this protected local service.',
+  'app.authTokenLabel': 'Server password',
+  'app.authTokenPlaceholder': 'SERVER_AUTH_TOKEN',
+  'app.authTokenRequired': 'Enter the server password.',
+  'app.authLogin': 'Connect',
 
   // ─── Error Codes ──────────────────────────────────────
   'error.CLI_NOT_RUNNING': 'CLI process is not running. The session may have ended or the process crashed.',

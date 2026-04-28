@@ -35,6 +35,18 @@ function resolveDefaultBaseUrl() {
 const DEFAULT_BASE_URL = resolveDefaultBaseUrl()
 
 let baseUrl = DEFAULT_BASE_URL
+const SERVER_AUTH_TOKEN_STORAGE_KEY = 'agent-code.serverAuthToken'
+let serverAuthToken = loadStoredServerAuthToken()
+
+function loadStoredServerAuthToken(): string | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const token = window.localStorage.getItem(SERVER_AUTH_TOKEN_STORAGE_KEY)
+    return token && token.trim() ? token : null
+  } catch {
+    return null
+  }
+}
 
 function getErrorMessage(status: number, body: unknown) {
   if (body && typeof body === 'object' && 'message' in body && typeof body.message === 'string') {
@@ -60,6 +72,36 @@ export function getDefaultBaseUrl() {
   return DEFAULT_BASE_URL
 }
 
+export function setServerAuthToken(token: string | null) {
+  const normalized = token?.trim() || null
+  serverAuthToken = normalized
+  if (typeof window === 'undefined') return
+  try {
+    if (normalized) {
+      window.localStorage.setItem(SERVER_AUTH_TOKEN_STORAGE_KEY, normalized)
+    } else {
+      window.localStorage.removeItem(SERVER_AUTH_TOKEN_STORAGE_KEY)
+    }
+  } catch {
+    // Ignore storage failures; the in-memory token still works this session.
+  }
+}
+
+export function getServerAuthToken() {
+  return serverAuthToken
+}
+
+export function getServerAuthHeaders(): Record<string, string> {
+  return serverAuthToken ? { Authorization: `Bearer ${serverAuthToken}` } : {}
+}
+
+export function withServerAuthQuery(url: string) {
+  if (!serverAuthToken) return url
+  const parsed = new URL(url)
+  parsed.searchParams.set('authToken', serverAuthToken)
+  return parsed.toString()
+}
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -74,6 +116,7 @@ async function request<T>(method: string, path: string, body?: unknown, options?
   const url = `${baseUrl}${path}`
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
+    ...getServerAuthHeaders(),
   }
 
   const controller = new AbortController()

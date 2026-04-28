@@ -859,6 +859,12 @@ export const zh: Record<TranslationKey, string> = {
   'app.copiedDiagnostics': '已复制',
   'app.launching': '正在准备本地工作区',
   'app.launchingDetail': '连接服务、恢复会话并加载项目上下文',
+  'app.authRequiredTitle': '需要本地服务密码',
+  'app.authRequiredHint': '请输入 SERVER_AUTH_TOKEN 的值，用于连接已开启鉴权的本地服务。',
+  'app.authTokenLabel': '服务密码',
+  'app.authTokenPlaceholder': 'SERVER_AUTH_TOKEN',
+  'app.authTokenRequired': '请输入服务密码。',
+  'app.authLogin': '连接',
 
   // ─── Error Codes ──────────────────────────────────────
   'error.CLI_NOT_RUNNING': 'CLI 进程未运行。会话可能已结束或进程已崩溃。',

@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('./client', () => ({
   getBaseUrl: () => 'http://127.0.0.1:3456',
+  withServerAuthQuery: (url: string) => url,
 }))
 
 import { wsManager } from './websocket'

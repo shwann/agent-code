@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { Sidebar } from './Sidebar'
 import { ContentRouter } from './ContentRouter'
 import { ToastContainer } from '../shared/Toast'
@@ -7,46 +7,73 @@ import { useSettingsStore } from '../../stores/settingsStore'
 import { useUIStore, type SettingsTab } from '../../stores/uiStore'
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts'
 import { initializeDesktopServerUrl } from '../../lib/desktopRuntime'
+import { ApiError, setServerAuthToken } from '../../api/client'
 import { TabBar } from './TabBar'
 import { StartupErrorView } from './StartupErrorView'
 import { useTabStore, SETTINGS_TAB_ID } from '../../stores/tabStore'
 import { useChatStore } from '../../stores/chatStore'
 import { useTranslation } from '../../i18n'
+import { Button } from '../shared/Button'
+
+function isServerAuthError(error: unknown) {
+  if (error instanceof ApiError && error.status === 401) return true
+  const message = error instanceof Error ? error.message : String(error)
+  return /Missing Authorization header|Invalid auth token|Unauthorized/i.test(message)
+}
 
 export function AppShell() {
   const fetchSettings = useSettingsStore((s) => s.fetchAll)
   const sidebarOpen = useUIStore((s) => s.sidebarOpen)
   const [ready, setReady] = useState(false)
   const [startupError, setStartupError] = useState<string | null>(null)
+  const [authRequired, setAuthRequired] = useState(false)
+  const [authTokenInput, setAuthTokenInput] = useState('')
+  const [authError, setAuthError] = useState<string | null>(null)
+  const [authSubmitting, setAuthSubmitting] = useState(false)
   const t = useTranslation()
+
+  const bootstrap = useCallback(async () => {
+    try {
+      setStartupError(null)
+      await initializeDesktopServerUrl()
+      await fetchSettings()
+
+      // Restore tabs from localStorage
+      await useTabStore.getState().restoreTabs()
+      const { activeTabId: activeId, tabs } = useTabStore.getState()
+      const activeTab = tabs.find((tab) => tab.sessionId === activeId)
+      if (activeId && activeTab?.type === 'session') {
+        useChatStore.getState().connectToSession(activeId)
+      }
+      setAuthRequired(false)
+      setAuthError(null)
+      setReady(true)
+    } catch (error) {
+      if (isServerAuthError(error)) {
+        setServerAuthToken(null)
+        setAuthTokenInput('')
+        setAuthRequired(true)
+        setAuthError(error instanceof Error ? error.message : String(error))
+        setReady(false)
+        setStartupError(null)
+        return
+      }
+
+      setStartupError(error instanceof Error ? error.message : String(error))
+      setAuthRequired(false)
+      setReady(false)
+    }
+  }, [fetchSettings])
 
   useEffect(() => {
     let cancelled = false
 
-    const bootstrap = async () => {
-      try {
-        await initializeDesktopServerUrl()
-        await fetchSettings()
-
-        // Restore tabs from localStorage
-        await useTabStore.getState().restoreTabs()
-        const { activeTabId: activeId, tabs } = useTabStore.getState()
-        const activeTab = tabs.find((tab) => tab.sessionId === activeId)
-        if (activeId && activeTab?.type === 'session') {
-          useChatStore.getState().connectToSession(activeId)
-        }
-        if (!cancelled) {
-          setReady(true)
-        }
-      } catch (error) {
-        if (!cancelled) {
-          setStartupError(error instanceof Error ? error.message : String(error))
-          setReady(false)
-        }
+    void bootstrap().catch((error) => {
+      if (!cancelled) {
+        setStartupError(error instanceof Error ? error.message : String(error))
+        setReady(false)
       }
-    }
-
-    void bootstrap()
+    })
 
     return () => {
       cancelled = true
@@ -75,6 +102,70 @@ export function AppShell() {
 
   if (startupError) {
     return <StartupErrorView error={startupError} />
+  }
+
+  if (authRequired) {
+    const handleSubmit = async (event: FormEvent) => {
+      event.preventDefault()
+      const token = authTokenInput.trim()
+      if (!token) {
+        setAuthError(t('app.authTokenRequired'))
+        return
+      }
+
+      setAuthSubmitting(true)
+      setAuthError(null)
+      setServerAuthToken(token)
+      try {
+        await bootstrap()
+      } finally {
+        setAuthSubmitting(false)
+      }
+    }
+
+    return (
+      <div className="h-screen flex items-center justify-center bg-[var(--color-canvas)] px-6">
+        <form
+          onSubmit={handleSubmit}
+          className="w-full max-w-sm rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-panel)]"
+        >
+          <div className="mb-5 flex items-start gap-3">
+            <span className="material-symbols-outlined mt-0.5 rounded-xl bg-[var(--color-primary-fixed)] p-2 text-[20px] text-[var(--color-brand)]">lock</span>
+            <div>
+              <h1 className="text-base font-semibold text-[var(--color-text-primary)]">
+                {t('app.authRequiredTitle')}
+              </h1>
+              <p className="mt-1 text-sm leading-5 text-[var(--color-text-secondary)]">
+                {t('app.authRequiredHint')}
+              </p>
+            </div>
+          </div>
+
+          <label className="mb-2 block text-xs font-medium text-[var(--color-text-secondary)]" htmlFor="server-auth-token">
+            {t('app.authTokenLabel')}
+          </label>
+          <input
+            id="server-auth-token"
+            type="password"
+            autoFocus
+            value={authTokenInput}
+            onChange={(event) => setAuthTokenInput(event.target.value)}
+            placeholder={t('app.authTokenPlaceholder')}
+            className="h-10 w-full rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-3 text-sm text-[var(--color-text-primary)] outline-none transition-colors placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-border-focus)] focus:shadow-[var(--shadow-focus-ring)]"
+          />
+
+          {authError ? (
+            <div className="mt-3 rounded-[var(--radius-md)] border border-[var(--color-error)]/20 bg-[var(--color-error)]/5 px-3 py-2 text-xs text-[var(--color-error)]">
+              {authError}
+            </div>
+          ) : null}
+
+          <Button type="submit" className="mt-5 w-full" loading={authSubmitting}>
+            {t('app.authLogin')}
+          </Button>
+        </form>
+      </div>
+    )
   }
 
   if (!ready) {

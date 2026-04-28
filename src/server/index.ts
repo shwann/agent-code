@@ -81,7 +81,7 @@ export function startServer(port = PORT, host = HOST) {
       if (url.pathname.startsWith('/ws/')) {
         // Enforce authentication when required
         if (authRequired) {
-          const authError = requireAuth(req)
+          const authError = requireAuth(req, url)
           if (authError) {
             const headers = new Headers(authError.headers)
             for (const [key, value] of Object.entries(corsHeaders(origin))) {
@@ -138,7 +138,7 @@ export function startServer(port = PORT, host = HOST) {
       if (url.pathname.startsWith('/api/')) {
         // Enforce authentication when required
         if (authRequired) {
-          const authError = requireAuth(req)
+          const authError = requireAuth(req, url)
           if (authError) {
             const headers = new Headers(authError.headers)
             for (const [key, value] of Object.entries(corsHeaders(origin))) {
@@ -171,7 +171,7 @@ export function startServer(port = PORT, host = HOST) {
       // Proxy — protocol-translating reverse proxy for OpenAI-compatible APIs
       if (url.pathname.startsWith('/proxy/')) {
         if (authRequired) {
-          const authError = requireAuth(req)
+          const authError = requireAuth(req, url)
           if (authError) {
             const headers = new Headers(authError.headers)
             for (const [key, value] of Object.entries(corsHeaders(origin))) {

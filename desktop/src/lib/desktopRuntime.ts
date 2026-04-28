@@ -1,4 +1,4 @@
-import { getDefaultBaseUrl, setBaseUrl } from '../api/client'
+import { getDefaultBaseUrl, getServerAuthHeaders, setBaseUrl } from '../api/client'
 
 export function isTauriRuntime() {
   if (typeof window === 'undefined') return false
@@ -40,6 +40,7 @@ async function waitForHealth(serverUrl: string) {
     try {
       const response = await fetch(`${serverUrl}/health`, {
         cache: 'no-store',
+        headers: getServerAuthHeaders(),
       })
       if (response.ok) {
         return
