@@ -179,9 +179,8 @@ ANTHROPIC_DEFAULT_OPUS_MODEL=gpt-4o
 
 Docker 部署适合服务器 Web 版使用。默认服务结构：
 
-- `app`：AgentCode API / WebSocket 服务。
+- `app`：AgentCode API / WebSocket 服务，同时运行 Telegram / 飞书 adapter 进程。
 - `web`：Nginx 静态 Web UI 和反向代理。
-- `adapters`：Telegram / 飞书等 IM adapter sidecar。
 
 ### 1. 准备 `.env`
 
@@ -205,6 +204,7 @@ AGENT_CODE_GID=1001
 AGENT_CODE_HOME=/home/agentcode
 AGENT_CODE_CHOWN_WORKSPACE=auto
 
+AGENT_CODE_ENABLE_ADAPTERS=1
 VITE_ENABLE_COMPUTER_USE=0
 DISABLE_TELEMETRY=1
 CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
@@ -230,6 +230,14 @@ id -g
 ```bash
 docker compose down && docker compose build && docker compose up -d
 ```
+
+如果镜像已经提前构建好，也可以直接使用运行版 compose：
+
+```bash
+docker compose -f docker-compose-run.yml up -d
+```
+
+`docker-compose-run.yml` 只使用 `agent-code-app:latest` 和 `agent-code-web:latest`。`agent-code-app` 内会同时启动 API / WebSocket 服务和 IM adapter 进程，不再需要 `agent-code-adapters` 镜像。
 
 打开：
 

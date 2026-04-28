@@ -1,16 +1,15 @@
 # Docker 部署指南
 
-本文档说明如何用 `docker compose` 部署 cc-haha Web 版，并启用服务端、Web UI 和 IM Adapter。当前 Docker 方案适合“浏览器访问 + 远程使用”，不用于构建 Tauri 桌面安装包。
+本文档说明如何用 `docker compose` 部署 AgentCode Web 版，并在同一个 `app` 容器内启用服务端和 IM Adapter。当前 Docker 方案适合“浏览器访问 + 远程使用”，不用于构建 Tauri 桌面安装包。
 
 ## 服务结构
 
-根目录 `docker-compose.yml` 定义了三个服务：
+根目录 `docker-compose.yml` 定义了两个服务：
 
 | 服务 | 作用 | 对外暴露 |
 | --- | --- | --- |
-| `app` | Bun API / WebSocket 服务端，负责会话、任务、配置、模型调用 | 不直接暴露，仅容器内 `3456` |
+| `app` | Bun API / WebSocket 服务端，同时托管 Telegram / 飞书 adapter 进程 | 不直接暴露，仅容器内 `3456` |
 | `web` | Nginx + Web UI 静态资源，并反向代理 `/api`、`/proxy`、`/ws` | 默认 `8080` |
-| `adapters` | IM Adapter sidecar，默认启动飞书 adapter | 不暴露端口 |
 
 相关文件：
 
@@ -21,7 +20,7 @@
 - `desktop/sidecars/claude-sidecar.ts`
 - `adapters/`
 
-`app` 和 `adapters` 使用同一个 `claude_data` volume，因此二者共享 `${AGENT_CODE_HOME:-/home/agentcode}/.claude`。Web UI 写入的 IM 配置会落在该目录下的 `adapters.json`，adapter 容器会读取同一份配置。
+`app` 使用 `agent-code-combined` 启动脚本，同时启动 API 服务和 adapter 进程。Web UI 写入的 IM 配置会落在 `${AGENT_CODE_HOME:-/home/agentcode}/.claude/adapters.json`，同容器内的 adapter 进程会读取同一份配置。
 
 ## 前置要求
 
@@ -66,6 +65,9 @@ AGENT_CODE_HOME=/home/agentcode
 # auto 只修正空的 root-owned /workspace；全新独立目录也可设 true 递归修正。
 AGENT_CODE_CHOWN_WORKSPACE=auto
 
+# 是否在 app 容器内同时启动 Telegram / 飞书 adapter
+AGENT_CODE_ENABLE_ADAPTERS=1
+
 # 时区
 TZ=Asia/Shanghai
 
@@ -95,7 +97,7 @@ CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
 ANTHROPIC_API_KEY=sk-ant-xxx
 ```
 
-`SERVER_AUTH_TOKEN` 会同时注入 `app`、`web` 和 `adapters`。由于 `app` 监听 `0.0.0.0` 时会启用鉴权，adapter 调用 `/api/sessions` 和 `/ws/:sessionId` 也必须携带同一个 token。
+`SERVER_AUTH_TOKEN` 会同时注入 `app` 和 `web`。由于 `app` 监听 `0.0.0.0` 时会启用鉴权，同容器内 adapter 调用 `/api/sessions` 和 `/ws/:sessionId` 也会携带同一个 token。
 
 Web 页面会要求输入 `SERVER_AUTH_TOKEN` 作为访问密码。登录态只保存在当前浏览器会话中，关闭浏览器或点击左侧栏“退出登录”后，下次访问需要重新输入密码。
 
@@ -122,7 +124,7 @@ cp .env.example .env.docker
 
 ## 容器用户和 workspace 权限
 
-`app` 和 `adapters` 默认不会以 root 身份运行。启动入口会按环境变量创建运行用户，然后降权执行服务：
+`app` 默认不会以 root 身份运行。启动入口会按环境变量创建运行用户，然后降权执行 API 服务和 adapter 进程：
 
 ```env
 AGENT_CODE_RUN_USER=agentcode
@@ -146,6 +148,12 @@ AGENT_CODE_CHOWN_WORKSPACE=true
 
 这会递归修正 `/workspace` 属主。不要对已有大仓库或共享目录开启该选项，避免改变宿主机文件属主。默认 `auto` 只会在 `/workspace` 是空的 root-owned 目录时修正顶层目录。
 
+如果只想启动 Web/API，不启动 IM adapter，可以设置：
+
+```env
+AGENT_CODE_ENABLE_ADAPTERS=0
+```
+
 ## 构建镜像
 
 ```bash
@@ -157,7 +165,6 @@ docker compose --env-file .env.docker build
 ```bash
 docker compose --env-file .env.docker build app
 docker compose --env-file .env.docker build web
-docker compose --env-file .env.docker build adapters
 ```
 
 依赖缓存异常时使用：
@@ -167,6 +174,14 @@ docker compose --env-file .env.docker build --no-cache
 ```
 
 `Dockerfile.server` 会分别安装根目录依赖和 `adapters/` 依赖。`adapters/` 里的飞书 SDK、Telegram SDK 不在根目录 `package.json` 中，不能省略这一步。
+
+如果镜像已经提前构建好，可以用运行版 compose 直接部署：
+
+```bash
+docker compose --env-file .env.docker -f docker-compose-run.yml up -d
+```
+
+运行版 compose 只使用 `agent-code-app:latest` 和 `agent-code-web:latest`。`agent-code-app` 内会同时启动 API / WebSocket 服务和 IM adapter 进程，不再需要 `agent-code-adapters` 镜像。
 
 ## 启动服务
 
@@ -183,9 +198,8 @@ docker compose --env-file .env.docker ps
 预期至少看到：
 
 ```text
-cc-haha-app-1        Up
-cc-haha-web-1        Up
-cc-haha-adapters-1   Up
+agent-code-app-1   Up
+agent-code-web-1   Up
 ```
 
 访问 Web UI：
@@ -210,27 +224,21 @@ docker compose --env-file .env.docker logs -f
 docker compose --env-file .env.docker logs -f app
 ```
 
-只看飞书 adapter：
-
-```bash
-docker compose --env-file .env.docker logs -f adapters
-```
-
-飞书 adapter 正常启动时应能看到类似日志：
+飞书 adapter 也在 `app` 日志里。正常启动时应能看到类似日志：
 
 ```text
 [claude-sidecar] starting Feishu adapter
 [Feishu] Starting bot...
-[Feishu] Server: ws://app:3456
+[Feishu] Server: ws://127.0.0.1:3456
 [Feishu] Bot is running! (WebSocket connected)
 ```
 
 ## 飞书接入
 
-默认 `adapters` 服务启动命令是：
+默认 `app` 容器启动命令是：
 
 ```yaml
-command: ["bun", "run", "desktop/sidecars/claude-sidecar.ts", "adapters", "--feishu"]
+command: ["/usr/local/bin/agent-code-combined"]
 ```
 
 飞书凭据通过 Web UI 配置，写入 `${AGENT_CODE_HOME:-/home/agentcode}/.claude/adapters.json`：
@@ -254,18 +262,18 @@ docker compose --env-file .env.docker exec app sh -lc 'cat "$CLAUDE_CONFIG_DIR/a
 
 按下面顺序排查。
 
-### 1. adapter 容器是否运行
+### 1. app 容器内 adapter 是否启动
 
 ```bash
 docker compose --env-file .env.docker ps
-docker compose --env-file .env.docker logs adapters --tail=200
+docker compose --env-file .env.docker logs app --tail=200
 ```
 
-如果没有 `adapters` 服务，或日志里没有 `starting Feishu adapter`，需要重新构建并启动：
+如果日志里没有 `starting Feishu adapter`，检查是否设置了 `AGENT_CODE_ENABLE_ADAPTERS=0`。修改后重新构建并启动：
 
 ```bash
-docker compose --env-file .env.docker build app adapters
-docker compose --env-file .env.docker up -d app adapters
+docker compose --env-file .env.docker build app
+docker compose --env-file .env.docker up -d app
 ```
 
 ### 2. 飞书长连接是否成功
@@ -281,12 +289,12 @@ docker compose --env-file .env.docker up -d app adapters
 - 飞书应用 `appId` / `appSecret` 是否正确
 - 飞书开发者后台是否启用了长连接接收事件
 - 飞书应用是否发布或安装到了目标组织
-- adapter 容器能否访问飞书开放平台
+- app 容器能否访问飞书开放平台
 
 ### 3. adapter 是否能访问 app API
 
 ```bash
-docker compose --env-file .env.docker exec adapters bun -e 'const r=await fetch("http://app:3456/api/sessions/recent-projects",{headers:{Authorization:`Bearer ${process.env.SERVER_AUTH_TOKEN}`}}); console.log(r.status)'
+docker compose --env-file .env.docker exec app bun -e 'const r=await fetch("http://127.0.0.1:3456/api/sessions/recent-projects",{headers:{Authorization:`Bearer ${process.env.SERVER_AUTH_TOKEN}`}}); console.log(r.status)'
 ```
 
 预期输出：
@@ -298,7 +306,7 @@ docker compose --env-file .env.docker exec adapters bun -e 'const r=await fetch(
 如果是 `401`：
 
 - 确认 `.env.docker` 中设置了 `SERVER_AUTH_TOKEN`
-- 确认 `docker-compose.yml` 中 `app`、`web`、`adapters` 都注入同一个 `SERVER_AUTH_TOKEN`
+- 确认 `docker-compose.yml` 中 `app`、`web` 都注入同一个 `SERVER_AUTH_TOKEN`
 - 修改后重新 `up -d`
 
 ### 4. 用户是否已配对
@@ -306,7 +314,7 @@ docker compose --env-file .env.docker exec adapters bun -e 'const r=await fetch(
 检查配对用户数量：
 
 ```bash
-docker compose --env-file .env.docker exec adapters sh -lc 'bun -e '\''const fs=require("fs"); const p=process.env.CLAUDE_CONFIG_DIR+"/adapters.json"; const c=JSON.parse(fs.readFileSync(p,"utf8")); console.log({pairedUsers:(c.feishu?.pairedUsers||[]).length, pairingActive:Date.now()<c.pairing?.expiresAt})'\'''
+docker compose --env-file .env.docker exec app sh -lc 'bun -e '\''const fs=require("fs"); const p=process.env.CLAUDE_CONFIG_DIR+"/adapters.json"; const c=JSON.parse(fs.readFileSync(p,"utf8")); console.log({pairedUsers:(c.feishu?.pairedUsers||[]).length, pairingActive:Date.now()<c.pairing?.expiresAt})'\'''
 ```
 
 如果 `pairedUsers` 是 `0`，说明还没有完成身份绑定。去 Web UI 重新生成配对码，然后在飞书私聊机器人发送该配对码。
@@ -317,7 +325,6 @@ docker compose --env-file .env.docker exec adapters sh -lc 'bun -e '\''const fs=
 
 ```bash
 docker compose --env-file .env.docker logs app --tail=200
-docker compose --env-file .env.docker logs adapters --tail=200
 ```
 
 常见问题：
@@ -329,16 +336,16 @@ docker compose --env-file .env.docker logs adapters --tail=200
 
 ## Telegram
 
-当前 `docker-compose.yml` 默认只启动飞书 adapter。如果需要 Telegram，可把 `adapters` 服务命令改成：
+当前 `agent-code-combined` 默认启动飞书 adapter。如果后续需要 Telegram，可调整 `docker/run-combined.sh` 中的 adapter 启动参数：
 
 ```yaml
-command: ["bun", "run", "desktop/sidecars/claude-sidecar.ts", "adapters", "--telegram"]
+bun run desktop/sidecars/claude-sidecar.ts adapters --telegram
 ```
 
 同时启动飞书和 Telegram：
 
 ```yaml
-command: ["bun", "run", "desktop/sidecars/claude-sidecar.ts", "adapters", "--feishu", "--telegram"]
+bun run desktop/sidecars/claude-sidecar.ts adapters --feishu --telegram
 ```
 
 然后在 Web UI 的 IM 接入页面配置 Telegram Bot Token 并完成配对。
@@ -429,5 +436,5 @@ mkdir -p /data/cc-haha/workspace
 docker compose --env-file .env.docker build
 docker compose --env-file .env.docker up -d
 docker compose --env-file .env.docker ps
-docker compose --env-file .env.docker logs -f adapters
+docker compose --env-file .env.docker logs -f app
 ```

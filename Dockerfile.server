@@ -17,7 +17,8 @@ RUN cd adapters && bun install --frozen-lockfile
 
 COPY . .
 COPY docker/entrypoint.server.sh /usr/local/bin/agent-code-entrypoint
-RUN chmod +x /usr/local/bin/agent-code-entrypoint
+COPY docker/run-combined.sh /usr/local/bin/agent-code-combined
+RUN chmod +x /usr/local/bin/agent-code-entrypoint /usr/local/bin/agent-code-combined
 
 ENV NODE_ENV=production \
   SERVER_HOST=0.0.0.0 \
@@ -32,4 +33,4 @@ ENV NODE_ENV=production \
 EXPOSE 3456
 
 ENTRYPOINT ["agent-code-entrypoint"]
-CMD ["bun", "run", "src/server/index.ts", "--host", "0.0.0.0", "--port", "3456"]
+CMD ["/usr/local/bin/agent-code-combined"]
