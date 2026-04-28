@@ -106,6 +106,8 @@ SERVER_ENABLE_COMPUTER_USE=0
 Authorization: Bearer your-token
 ```
 
+Web 页面登录后，token 只保存在当前浏览器会话的 `sessionStorage` 中，不会长期写入 `localStorage`。关闭浏览器或点击左侧栏“退出登录”后，下次访问需要重新输入密码。
+
 ## Docker 工作区和运行用户
 
 Docker 部署时推荐显式设置运行用户。服务进程不应以 root 运行。

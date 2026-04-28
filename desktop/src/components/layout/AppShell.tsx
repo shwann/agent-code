@@ -7,7 +7,7 @@ import { useSettingsStore } from '../../stores/settingsStore'
 import { useUIStore, type SettingsTab } from '../../stores/uiStore'
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts'
 import { initializeDesktopServerUrl } from '../../lib/desktopRuntime'
-import { ApiError, setServerAuthToken } from '../../api/client'
+import { ApiError, getServerAuthToken, setServerAuthToken } from '../../api/client'
 import { TabBar } from './TabBar'
 import { StartupErrorView } from './StartupErrorView'
 import { useTabStore, SETTINGS_TAB_ID } from '../../stores/tabStore'
@@ -50,10 +50,11 @@ export function AppShell() {
       setReady(true)
     } catch (error) {
       if (isServerAuthError(error)) {
+        const hadAuthToken = Boolean(getServerAuthToken())
         setServerAuthToken(null)
         setAuthTokenInput('')
         setAuthRequired(true)
-        setAuthError(error instanceof Error ? error.message : String(error))
+        setAuthError(hadAuthToken ? (error instanceof Error ? error.message : String(error)) : null)
         setReady(false)
         setStartupError(null)
         return
@@ -137,6 +138,9 @@ export function AppShell() {
               </h1>
               <p className="mt-1 text-sm leading-5 text-[var(--color-text-secondary)]">
                 {t('app.authRequiredHint')}
+              </p>
+              <p className="mt-1 text-xs leading-5 text-[var(--color-text-tertiary)]">
+                {t('app.authSessionHint')}
               </p>
             </div>
           </div>

@@ -881,11 +881,13 @@ export const en = {
   'app.launching': 'Preparing local workspace',
   'app.launchingDetail': 'Connecting services, restoring sessions, and loading project context',
   'app.authRequiredTitle': 'Local server password required',
-  'app.authRequiredHint': 'Enter the value of SERVER_AUTH_TOKEN to connect to this protected local service.',
-  'app.authTokenLabel': 'Server password',
-  'app.authTokenPlaceholder': 'SERVER_AUTH_TOKEN',
-  'app.authTokenRequired': 'Enter the server password.',
+  'app.authRequiredHint': 'Enter the secondary confirmation password to access this protected AgentCode service.',
+  'app.authSessionHint': 'The login is stored only for the current browser session; close the browser or sign out to require the password again.',
+  'app.authTokenLabel': 'Secondary confirmation password',
+  'app.authTokenPlaceholder': 'Enter secondary confirmation password',
+  'app.authTokenRequired': 'Enter the secondary confirmation password.',
   'app.authLogin': 'Connect',
+  'app.authLogout': 'Sign out',
 
   // ─── Error Codes ──────────────────────────────────────
   'error.CLI_NOT_RUNNING': 'CLI process is not running. The session may have ended or the process crashed.',

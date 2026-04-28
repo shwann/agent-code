@@ -97,6 +97,8 @@ ANTHROPIC_API_KEY=sk-ant-xxx
 
 `SERVER_AUTH_TOKEN` 会同时注入 `app`、`web` 和 `adapters`。由于 `app` 监听 `0.0.0.0` 时会启用鉴权，adapter 调用 `/api/sessions` 和 `/ws/:sessionId` 也必须携带同一个 token。
 
+Web 页面会要求输入 `SERVER_AUTH_TOKEN` 作为访问密码。登录态只保存在当前浏览器会话中，关闭浏览器或点击左侧栏“退出登录”后，下次访问需要重新输入密码。
+
 ## 准备目录
 
 ```bash

@@ -25,9 +25,11 @@ import { ComputerUseSettings } from './ComputerUseSettings'
 import { McpSettings } from './McpSettings'
 import { TerminalSettings } from './TerminalSettings'
 import { useUIStore, type SettingsTab } from '../stores/uiStore'
+import { getServerAuthToken, setServerAuthToken } from '../api/client'
 
 export function Settings() {
   const [activeTab, setActiveTab] = useState<SettingsTab>('providers')
+  const [hasServerAuthToken, setHasServerAuthToken] = useState(() => Boolean(getServerAuthToken()))
   const pendingSettingsTab = useUIStore((s) => s.pendingSettingsTab)
   const isComputerUseEnabled = useSettingsStore((s) => s.features.computerUse)
   const t = useTranslation()
@@ -66,6 +68,18 @@ export function Settings() {
             )}
           </div>
           <div className="border-t border-[var(--color-border)]/40 pt-1">
+            {hasServerAuthToken && (
+              <TabButton
+                icon="logout"
+                label={t('app.authLogout')}
+                active={false}
+                onClick={() => {
+                  setServerAuthToken(null)
+                  setHasServerAuthToken(false)
+                  window.location.reload()
+                }}
+              />
+            )}
             <TabButton icon="info" label={t('settings.tab.about')} active={activeTab === 'about'} onClick={() => setActiveTab('about')} />
           </div>
         </div>

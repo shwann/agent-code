@@ -883,11 +883,13 @@ export const zh: Record<TranslationKey, string> = {
   'app.launching': '正在准备本地工作区',
   'app.launchingDetail': '连接服务、恢复会话并加载项目上下文',
   'app.authRequiredTitle': '需要本地服务密码',
-  'app.authRequiredHint': '请输入 SERVER_AUTH_TOKEN 的值，用于连接已开启鉴权的本地服务。',
-  'app.authTokenLabel': '服务密码',
-  'app.authTokenPlaceholder': 'SERVER_AUTH_TOKEN',
-  'app.authTokenRequired': '请输入服务密码。',
+  'app.authRequiredHint': '请输入二次确认密码，用于访问已开启保护的 AgentCode 服务。',
+  'app.authSessionHint': '登录态只保存在当前浏览器会话中；关闭浏览器或点击退出登录后需要重新输入。',
+  'app.authTokenLabel': '二次确认密码',
+  'app.authTokenPlaceholder': '请输入二次确认密码',
+  'app.authTokenRequired': '请输入二次确认密码。',
   'app.authLogin': '连接',
+  'app.authLogout': '退出登录',
 
   // ─── Error Codes ──────────────────────────────────────
   'error.CLI_NOT_RUNNING': 'CLI 进程未运行。会话可能已结束或进程已崩溃。',

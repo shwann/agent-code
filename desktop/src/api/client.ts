@@ -36,12 +36,52 @@ const DEFAULT_BASE_URL = resolveDefaultBaseUrl()
 
 let baseUrl = DEFAULT_BASE_URL
 const SERVER_AUTH_TOKEN_STORAGE_KEY = 'agent-code.serverAuthToken'
+const SERVER_AUTH_TOKEN_EXPIRES_STORAGE_KEY = 'agent-code.serverAuthTokenExpiresAt'
+const LEGACY_SERVER_AUTH_TOKEN_STORAGE_KEY = 'agent-code.serverAuthToken'
+const SERVER_AUTH_SESSION_TTL_MS = parseServerAuthSessionTtl()
+let serverAuthTokenExpiresAt: number | null = null
 let serverAuthToken = loadStoredServerAuthToken()
 
-function loadStoredServerAuthToken(): string | null {
+function parseServerAuthSessionTtl(): number {
+  const raw = import.meta.env?.VITE_SERVER_AUTH_SESSION_TTL_MS?.trim()
+  if (!raw) return 0
+  const value = Number(raw)
+  return Number.isFinite(value) && value > 0 ? value : 0
+}
+
+function getAuthStorage(): Storage | null {
   if (typeof window === 'undefined') return null
+  return window.sessionStorage
+}
+
+function clearLegacyStoredServerAuthToken() {
+  if (typeof window === 'undefined') return
   try {
-    const token = window.localStorage.getItem(SERVER_AUTH_TOKEN_STORAGE_KEY)
+    window.localStorage.removeItem(LEGACY_SERVER_AUTH_TOKEN_STORAGE_KEY)
+  } catch {
+    // Ignore storage failures.
+  }
+}
+
+function isServerAuthTokenExpired() {
+  return serverAuthTokenExpiresAt !== null && Date.now() >= serverAuthTokenExpiresAt
+}
+
+function loadStoredServerAuthToken(): string | null {
+  clearLegacyStoredServerAuthToken()
+  const storage = getAuthStorage()
+  if (!storage) return null
+  try {
+    const expiresAtRaw = storage.getItem(SERVER_AUTH_TOKEN_EXPIRES_STORAGE_KEY)
+    serverAuthTokenExpiresAt = expiresAtRaw ? Number(expiresAtRaw) : null
+    if (isServerAuthTokenExpired()) {
+      storage.removeItem(SERVER_AUTH_TOKEN_STORAGE_KEY)
+      storage.removeItem(SERVER_AUTH_TOKEN_EXPIRES_STORAGE_KEY)
+      serverAuthTokenExpiresAt = null
+      return null
+    }
+
+    const token = storage.getItem(SERVER_AUTH_TOKEN_STORAGE_KEY)
     return token && token.trim() ? token : null
   } catch {
     return null
@@ -75,12 +115,22 @@ export function getDefaultBaseUrl() {
 export function setServerAuthToken(token: string | null) {
   const normalized = token?.trim() || null
   serverAuthToken = normalized
-  if (typeof window === 'undefined') return
+  serverAuthTokenExpiresAt = normalized && SERVER_AUTH_SESSION_TTL_MS > 0
+    ? Date.now() + SERVER_AUTH_SESSION_TTL_MS
+    : null
+  const storage = getAuthStorage()
+  if (!storage) return
   try {
     if (normalized) {
-      window.localStorage.setItem(SERVER_AUTH_TOKEN_STORAGE_KEY, normalized)
+      storage.setItem(SERVER_AUTH_TOKEN_STORAGE_KEY, normalized)
+      if (serverAuthTokenExpiresAt !== null) {
+        storage.setItem(SERVER_AUTH_TOKEN_EXPIRES_STORAGE_KEY, String(serverAuthTokenExpiresAt))
+      } else {
+        storage.removeItem(SERVER_AUTH_TOKEN_EXPIRES_STORAGE_KEY)
+      }
     } else {
-      window.localStorage.removeItem(SERVER_AUTH_TOKEN_STORAGE_KEY)
+      storage.removeItem(SERVER_AUTH_TOKEN_STORAGE_KEY)
+      storage.removeItem(SERVER_AUTH_TOKEN_EXPIRES_STORAGE_KEY)
     }
   } catch {
     // Ignore storage failures; the in-memory token still works this session.
@@ -88,17 +138,22 @@ export function setServerAuthToken(token: string | null) {
 }
 
 export function getServerAuthToken() {
+  if (isServerAuthTokenExpired()) {
+    setServerAuthToken(null)
+  }
   return serverAuthToken
 }
 
 export function getServerAuthHeaders(): Record<string, string> {
-  return serverAuthToken ? { Authorization: `Bearer ${serverAuthToken}` } : {}
+  const token = getServerAuthToken()
+  return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
 export function withServerAuthQuery(url: string) {
-  if (!serverAuthToken) return url
+  const token = getServerAuthToken()
+  if (!token) return url
   const parsed = new URL(url)
-  parsed.searchParams.set('authToken', serverAuthToken)
+  parsed.searchParams.set('authToken', token)
   return parsed.toString()
 }
 

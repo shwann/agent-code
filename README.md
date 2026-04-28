@@ -238,6 +238,7 @@ http://127.0.0.1:8080
 ```
 
 如果配置了 `SERVER_AUTH_TOKEN`，页面会要求输入访问密码。
+登录态只保存在当前浏览器会话中，关闭浏览器或在左侧栏点击“退出登录”后，下次访问需要重新输入密码。
 
 ### 3. 检查状态
 
@@ -393,6 +394,8 @@ Docker 服务不会以 root 用户运行。如果服务进程是 root，`bypassP
 ```bash
 Authorization: Bearer your-token
 ```
+
+登录后 token 只保存在当前浏览器会话的 `sessionStorage` 中，不会长期写入 `localStorage`。关闭浏览器或点击左侧栏“退出登录”后，会清除登录态。
 
 ### Docker 新建项目报 `/root/.claude` 权限错误
 
