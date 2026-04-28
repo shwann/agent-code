@@ -27,14 +27,16 @@ export type OpenAIToolCall = {
   }
 }
 
-export type OpenAITool = {
-  type: 'function'
-  function: {
-    name: string
-    description?: string
-    parameters?: Record<string, unknown>
+export type OpenAITool =
+  | {
+    type: 'function'
+    function: {
+      name: string
+      description?: string
+      parameters?: Record<string, unknown>
+    }
   }
-}
+  | { type: 'web_search' }
 
 export type OpenAIChatRequest = {
   model: string
@@ -162,9 +164,10 @@ export type AnthropicRequest = {
   stop_sequences?: string[]
   stream?: boolean
   tools?: Array<{
+    type?: string
     name: string
     description?: string
-    input_schema: Record<string, unknown>
+    input_schema?: Record<string, unknown>
     cache_control?: unknown
   }>
   tool_choice?: unknown

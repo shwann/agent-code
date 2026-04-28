@@ -14,6 +14,7 @@ import { anthropicToOpenaiChat } from '../proxy/transform/anthropicToOpenaiChat.
 import { anthropicToOpenaiResponses } from '../proxy/transform/anthropicToOpenaiResponses.js'
 import { openaiChatToAnthropic } from '../proxy/transform/openaiChatToAnthropic.js'
 import { openaiResponsesToAnthropic } from '../proxy/transform/openaiResponsesToAnthropic.js'
+import { buildOpenaiEndpoint } from '../proxy/endpoint.js'
 import type { AnthropicRequest, AnthropicResponse } from '../proxy/transform/types.js'
 import type {
   SavedProvider,
@@ -34,9 +35,24 @@ const MANAGED_ENV_KEYS = [
   'ANTHROPIC_DEFAULT_HAIKU_MODEL',
   'ANTHROPIC_DEFAULT_SONNET_MODEL',
   'ANTHROPIC_DEFAULT_OPUS_MODEL',
+  'AGENT_CODE_PROVIDER_API_FORMAT',
+  'AGENT_CODE_PROVIDER_BASE_URL',
+  'AGENT_CODE_PROVIDER_WEB_SEARCH',
 ] as const
 
 const DEFAULT_INDEX: ProvidersIndex = { activeId: null, providers: [] }
+
+function providerSupportsNativeWebSearch(provider: SavedProvider): boolean {
+  if (provider.apiFormat !== 'openai_responses') {
+    return false
+  }
+  try {
+    const host = new URL(provider.baseUrl).host.toLowerCase()
+    return host.endsWith('volces.com') || host.endsWith('volcengine.com')
+  } catch {
+    return false
+  }
+}
 
 export class ProviderService {
   private static serverPort = 3456
@@ -244,6 +260,11 @@ export class ProviderService {
       ANTHROPIC_DEFAULT_HAIKU_MODEL: provider.models.haiku,
       ANTHROPIC_DEFAULT_SONNET_MODEL: provider.models.sonnet,
       ANTHROPIC_DEFAULT_OPUS_MODEL: provider.models.opus,
+      AGENT_CODE_PROVIDER_API_FORMAT: provider.apiFormat ?? 'anthropic',
+      AGENT_CODE_PROVIDER_BASE_URL: provider.baseUrl,
+      AGENT_CODE_PROVIDER_WEB_SEARCH: providerSupportsNativeWebSearch(provider)
+        ? 'openai_responses_web_search'
+        : '0',
     }
   }
 
@@ -478,10 +499,10 @@ export class ProviderService {
       let transformedBody: unknown
       if (format === 'openai_chat') {
         transformedBody = anthropicToOpenaiChat(anthropicReq)
-        upstreamUrl = `${base}/v1/chat/completions`
+        upstreamUrl = buildOpenaiEndpoint(base, 'chat_completions')
       } else {
         transformedBody = anthropicToOpenaiResponses(anthropicReq)
-        upstreamUrl = `${base}/v1/responses`
+        upstreamUrl = buildOpenaiEndpoint(base, 'responses')
       }
 
       // Call upstream with transformed request
@@ -536,14 +557,14 @@ function buildDirectTestRequest(
 
   if (format === 'openai_chat') {
     return {
-      url: `${base}/v1/chat/completions`,
+      url: buildOpenaiEndpoint(base, 'chat_completions'),
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
       body: { model: modelId, max_tokens: 16, messages: [{ role: 'user', content: prompt }] },
     }
   }
   if (format === 'openai_responses') {
     return {
-      url: `${base}/v1/responses`,
+      url: buildOpenaiEndpoint(base, 'responses'),
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
       body: { model: modelId, max_output_tokens: 16, input: [{ type: 'message', role: 'user', content: prompt }] },
     }

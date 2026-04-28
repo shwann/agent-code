@@ -51,14 +51,20 @@ export function anthropicToOpenaiResponses(body: AnthropicRequest): OpenAIRespon
   if (body.tools && body.tools.length > 0) {
     result.tools = body.tools
       .filter((t) => t.name !== 'BatchTool')
-      .map((t): OpenAITool => ({
-        type: 'function',
-        function: {
-          name: t.name,
-          description: t.description,
-          parameters: t.input_schema,
-        },
-      }))
+      .map((t): OpenAITool => {
+        if (t.type === 'web_search_20250305') {
+          return { type: 'web_search' }
+        }
+
+        return {
+          type: 'function',
+          function: {
+            name: t.name,
+            description: t.description,
+            parameters: t.input_schema,
+          },
+        }
+      })
   }
 
   // tool_choice

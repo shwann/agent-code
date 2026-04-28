@@ -7,7 +7,20 @@ import { anthropicToOpenaiChat } from '../proxy/transform/anthropicToOpenaiChat.
 import { anthropicToOpenaiResponses } from '../proxy/transform/anthropicToOpenaiResponses.js'
 import { openaiChatToAnthropic } from '../proxy/transform/openaiChatToAnthropic.js'
 import { openaiResponsesToAnthropic } from '../proxy/transform/openaiResponsesToAnthropic.js'
+import { buildOpenaiEndpoint } from '../proxy/endpoint.js'
 import type { AnthropicRequest, OpenAIChatResponse, OpenAIResponsesResponse } from '../proxy/transform/types.js'
+
+describe('buildOpenaiEndpoint', () => {
+  test('uses OpenAI /v1 paths for root base URLs', () => {
+    expect(buildOpenaiEndpoint('https://api.openai.com', 'responses')).toBe('https://api.openai.com/v1/responses')
+    expect(buildOpenaiEndpoint('https://api.openai.com', 'chat_completions')).toBe('https://api.openai.com/v1/chat/completions')
+  })
+
+  test('uses Volcengine /api/v3 paths without inserting /v1', () => {
+    expect(buildOpenaiEndpoint('https://ark.cn-beijing.volces.com/api/v3', 'responses')).toBe('https://ark.cn-beijing.volces.com/api/v3/responses')
+    expect(buildOpenaiEndpoint('https://ark.cn-beijing.volces.com/api/v3', 'chat_completions')).toBe('https://ark.cn-beijing.volces.com/api/v3/chat/completions')
+  })
+})
 
 // ─── anthropicToOpenaiChat ──────────────────────────────────────
 
@@ -326,6 +339,20 @@ describe('anthropicToOpenaiResponses', () => {
       expect(fc.name).toBe('search')
       expect(fc.arguments).toBe('{"q":"test"}')
     }
+  })
+
+  test('Anthropic web_search server tool maps to native Responses web_search', () => {
+    const req: AnthropicRequest = {
+      model: 'doubao-seed-1-6-250615',
+      max_tokens: 100,
+      messages: [{ role: 'user', content: '上海今天天气' }],
+      tools: [{
+        type: 'web_search_20250305',
+        name: 'web_search',
+      }],
+    }
+    const result = anthropicToOpenaiResponses(req)
+    expect(result.tools).toEqual([{ type: 'web_search' }])
   })
 
   test('tool_result lifted to function_call_output', () => {

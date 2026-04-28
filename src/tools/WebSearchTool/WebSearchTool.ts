@@ -2,7 +2,10 @@ import type {
   BetaContentBlock,
   BetaWebSearchTool20250305,
 } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
-import { getAPIProvider } from 'src/utils/model/providers.js'
+import {
+  getAPIProvider,
+  isFirstPartyAnthropicBaseUrl,
+} from 'src/utils/model/providers.js'
 import type { PermissionResult } from 'src/utils/permissions/PermissionResult.js'
 import { z } from 'zod/v4'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../../services/analytics/growthbook.js'
@@ -12,7 +15,7 @@ import { lazySchema } from '../../utils/lazySchema.js'
 import { logError } from '../../utils/log.js'
 import { createUserMessage } from '../../utils/messages.js'
 import { getMainLoopModel, getSmallFastModel } from '../../utils/model/model.js'
-import { jsonParse, jsonStringify } from '../../utils/slowOperations.js'
+import { jsonParse } from '../../utils/slowOperations.js'
 import { asSystemPrompt } from '../../utils/systemPromptType.js'
 import { getWebSearchPrompt, WEB_SEARCH_TOOL_NAME } from './prompt.js'
 import {
@@ -83,7 +86,7 @@ function makeToolSchema(input: Input): BetaWebSearchTool20250305 {
   }
 }
 
-function makeOutputFromSearchResponse(
+export function makeOutputFromSearchResponse(
   result: BetaContentBlock[],
   query: string,
   durationSeconds: number,
@@ -104,9 +107,6 @@ function makeOutputFromSearchResponse(
     if (block.type === 'server_tool_use') {
       if (inText) {
         inText = false
-        if (textAcc.trim().length > 0) {
-          results.push(textAcc.trim())
-        }
         textAcc = ''
       }
       continue
@@ -138,7 +138,7 @@ function makeOutputFromSearchResponse(
     }
   }
 
-  if (textAcc.length) {
+  if (textAcc.trim().length > 0) {
     results.push(textAcc.trim())
   }
 
@@ -147,6 +147,33 @@ function makeOutputFromSearchResponse(
     results,
     durationSeconds,
   }
+}
+
+export function formatWebSearchToolResultContent(output: Output): string {
+  const { query, results } = output
+  const lines = [`Search results for query: "${query}"`, '']
+
+  for (const result of results ?? []) {
+    if (result == null) {
+      continue
+    }
+    if (typeof result === 'string') {
+      lines.push(result.trim(), '')
+      continue
+    }
+
+    if (result.content?.length > 0) {
+      lines.push('Sources:')
+      for (const link of result.content) {
+        lines.push(`- [${link.title}](${link.url})`)
+      }
+      lines.push('')
+    } else {
+      lines.push('No links found.', '')
+    }
+  }
+
+  return lines.join('\n').trim()
 }
 
 export const WebSearchTool = buildTool({
@@ -171,7 +198,11 @@ export const WebSearchTool = buildTool({
 
     // Enable for firstParty
     if (provider === 'firstParty') {
-      return true
+      return (
+        isFirstPartyAnthropicBaseUrl() ||
+        process.env.AGENT_CODE_PROVIDER_WEB_SEARCH ===
+          'openai_responses_web_search'
+      )
     }
 
     // Enable for Vertex AI with supported models (Claude 4.0+)
@@ -268,7 +299,13 @@ export const WebSearchTool = buildTool({
     const queryStream = queryModelWithStreaming({
       messages: [userMessage],
       systemPrompt: asSystemPrompt([
-        'You are an assistant for performing a web search tool use',
+        [
+          'You are an assistant for performing a web search tool use.',
+          'Use web_search to find current information.',
+          'Do not describe the search process, do not say you will search, and do not emit retry or status messages.',
+          'After the final search, return concise factual findings with citations when available.',
+          'If no useful information is found, say that briefly once.',
+        ].join(' '),
       ]),
       thinkingConfig: useHaiku
         ? { type: 'disabled' as const }
@@ -399,37 +436,10 @@ export const WebSearchTool = buildTool({
     return { data }
   },
   mapToolResultToToolResultBlockParam(output, toolUseID) {
-    const { query, results } = output
-
-    let formattedOutput = `Web search results for query: "${query}"\n\n`
-
-    // Process the results array - it can contain both string summaries and search result objects.
-    // Guard against null/undefined entries that can appear after JSON round-tripping
-    // (e.g., from compaction or transcript deserialization).
-    ;(results ?? []).forEach(result => {
-      if (result == null) {
-        return
-      }
-      if (typeof result === 'string') {
-        // Text summary
-        formattedOutput += result + '\n\n'
-      } else {
-        // Search result with links
-        if (result.content?.length > 0) {
-          formattedOutput += `Links: ${jsonStringify(result.content)}\n\n`
-        } else {
-          formattedOutput += 'No links found.\n\n'
-        }
-      }
-    })
-
-    formattedOutput +=
-      '\nREMINDER: You MUST include the sources above in your response to the user using markdown hyperlinks.'
-
     return {
       tool_use_id: toolUseID,
       type: 'tool_result',
-      content: formattedOutput.trim(),
+      content: formatWebSearchToolResultContent(output),
     }
   },
 } satisfies ToolDef<InputSchema, Output, WebSearchProgress>)
