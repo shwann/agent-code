@@ -54,12 +54,8 @@
   <path d="M262 162L272 191L302 181L281 204L301 227L272 218L262 247L252 218L223 227L243 204L222 181L252 191L262 162Z" fill="#FFD15C"/>
 
   <text x="598" y="292" fill="#271714" font-family="Avenir Next, SF Pro Display, Inter, Helvetica Neue, Arial, sans-serif" font-size="188" font-weight="800" letter-spacing="-7">
-    Claude Code
+    agent-code
   </text>
-  <text x="1558" y="292" fill="url(#hahaText)" font-family="Avenir Next, SF Pro Display, Inter, Helvetica Neue, Arial, sans-serif" font-size="188" font-weight="800" letter-spacing="-7">
-    Haha
-  </text>
-
   <text x="602" y="394" fill="#7A5C51" font-family="JetBrains Mono, SFMono-Regular, Menlo, monospace" font-size="36" font-weight="700" letter-spacing="7">
     NEXT-GEN PERSONAL AI AGENT
   </text>

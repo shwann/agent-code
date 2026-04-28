@@ -13,6 +13,7 @@ const ORIGINAL_USERPROFILE = process.env.USERPROFILE
 const ORIGINAL_SHELL = process.env.SHELL
 const ORIGINAL_PATH = process.env.PATH
 const ORIGINAL_CLAUDE_CLI_PATH = process.env.CLAUDE_CLI_PATH
+const ORIGINAL_ZDOTDIR = process.env.ZDOTDIR
 
 describe('ensureDesktopCliLauncherInstalled', () => {
   let tempHome = ''
@@ -25,6 +26,7 @@ describe('ensureDesktopCliLauncherInstalled', () => {
     process.env.USERPROFILE = tempHome
     process.env.SHELL = '/bin/zsh'
     process.env.PATH = ''
+    delete process.env.ZDOTDIR
   })
 
   afterEach(async () => {
@@ -58,6 +60,12 @@ describe('ensureDesktopCliLauncherInstalled', () => {
       process.env.CLAUDE_CLI_PATH = ORIGINAL_CLAUDE_CLI_PATH
     }
 
+    if (ORIGINAL_ZDOTDIR === undefined) {
+      delete process.env.ZDOTDIR
+    } else {
+      process.env.ZDOTDIR = ORIGINAL_ZDOTDIR
+    }
+
     await rm(tempHome, { recursive: true, force: true })
     await rm(tempSourceDir, { recursive: true, force: true })
   })
@@ -69,12 +77,12 @@ describe('ensureDesktopCliLauncherInstalled', () => {
     process.env.CLAUDE_CLI_PATH = sourcePath
 
     const status = await ensureDesktopCliLauncherInstalled()
-    const launcherPath = join(tempHome, '.local', 'bin', 'claude-haha')
+    const launcherPath = join(tempHome, '.local', 'bin', 'agent-code')
     const shellConfigPath = join(tempHome, '.zshrc')
 
     expect(status.supported).toBe(true)
     expect(status.installed).toBe(true)
-    expect(status.command).toBe('claude-haha')
+    expect(status.command).toBe('agent-code')
     expect(status.launcherPath).toBe(launcherPath)
     expect(status.availableInNewTerminals).toBe(true)
     expect(status.needsTerminalRestart).toBe(true)
@@ -95,6 +103,6 @@ describe('ensureDesktopCliLauncherInstalled', () => {
 
     expect(status.supported).toBe(false)
     expect(status.installed).toBe(false)
-    expect(status.command).toBe('claude-haha')
+    expect(status.command).toBe('agent-code')
   })
 })

@@ -44,7 +44,7 @@ export function anthropicToOpenaiChat(body: AnthropicRequest): OpenAIChatRequest
   }
 
   // max_tokens — omit to let upstream provider use its own default/max.
-  // Claude Code sends very large values (e.g. 128K) that exceed many
+  // agent-code sends very large values (e.g. 128K) that exceed many
   // providers' limits (DeepSeek: 8192, etc.).
 
   // temperature & top_p

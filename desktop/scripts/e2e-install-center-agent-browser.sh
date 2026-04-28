@@ -155,7 +155,7 @@ ${AB} screenshot "${ARTIFACT_DIR}/02-plugin-installed.png" >/dev/null
 echo "Running skill install flow"
 ${AB} click 'button:has-text("Install")'
 run_install_prompt "${SKILL_PROMPT}"
-wait_for_body_contains 'claude-code-templates@latest'
+wait_for_body_contains 'agent-code-templates@latest'
 wait_for_path "${SKILL_DIR}"
 ${AB} click 'button:has-text("Open Skills")'
 wait_for_body_contains 'Installed Skills'

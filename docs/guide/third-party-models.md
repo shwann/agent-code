@@ -5,7 +5,7 @@
 ## 原理
 
 ```
-claude-code-haha ──Anthropic协议──▶ LiteLLM Proxy ──OpenAI协议──▶ 目标模型 API
+agent-code ──Anthropic协议──▶ LiteLLM Proxy ──OpenAI协议──▶ 目标模型 API
                                       (协议转换)
 ```
 
@@ -146,7 +146,7 @@ CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
 ### 5. 启动并验证
 
 ```bash
-./bin/claude-haha
+./bin/agent-code
 ```
 
 如果一切正常，你应该能看到正常的对话界面，实际调用的是你配置的目标模型。
@@ -198,7 +198,7 @@ CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
 
 ## 方式三：其他代理工具
 
-社区还有一些专门为 Claude Code 做的代理工具：
+社区还有一些专门为 agent-code 做的代理工具：
 
 | 工具 | 说明 | 链接 |
 |------|------|------|

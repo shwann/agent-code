@@ -1,4 +1,4 @@
-# Claude Code Channel System Documentation
+# agent-code channel system documentation
 
 > Complete technical analysis of remote Agent control via IM platforms
 
@@ -8,7 +8,7 @@
 
 ### [01-channel-system.md](./01-channel-system.md) — Channel System Architecture
 
-A deep dive into the design and implementation of Claude Code's Channel system from a source code perspective, covering:
+A deep dive into the design and implementation of agent-code's Channel system from a source code perspective, covering:
 
 - **What is a Channel**: Core concepts of IM integration, MCP protocol foundations
 - **Architecture Overview**: End-to-end message flow, component relationships
@@ -77,7 +77,7 @@ All illustrations use dark background (#1a1a2e) with Anthropic brand copper-oran
 
 ## Related Resources
 
-- [Claude Code Haha Home](/en/)
+- [agent-code Home](/en/)
 - [Agent Framework Deep Dive](/en/agent/03-agent-framework)
 - [Skills System Documentation](/en/skills/01-usage-guide)
 - [GitHub Issues](https://github.com/NanmiCoder/cc-haha/issues)

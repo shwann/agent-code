@@ -1,4 +1,4 @@
-# Claude Code Haha Desktop
+# agent-code Desktop
 
 基于 Tauri 2 + React 的桌面客户端。
 

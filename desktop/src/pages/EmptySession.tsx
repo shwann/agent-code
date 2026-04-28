@@ -456,12 +456,12 @@ export function EmptySession() {
   return (
     <div className="relative flex flex-1 flex-col overflow-hidden bg-[var(--color-surface)]">
       <div className="flex flex-1 flex-col items-center justify-center p-8 pb-32">
-        <div className="flex max-w-md flex-col items-center text-center">
-          <img src="/app-icon.png" alt="Claude Code Haha" className="mb-6 h-24 w-24" />
-          <h1 className="mb-2 text-3xl font-extrabold tracking-tight text-[var(--color-text-primary)]" style={{ fontFamily: 'var(--font-headline)' }}>
+        <div className="flex max-w-xl flex-col items-center text-center">
+          <img src="/app-icon.png" alt="AgentCode" className="mb-6 h-16 w-16 rounded-2xl ring-2 ring-[var(--color-brand)]/15 shadow-[0_8px_24px_rgba(0,0,0,0.10)]" />
+          <h1 className="mb-3 text-[30px] font-semibold leading-tight tracking-normal text-[var(--color-text-primary)]" style={{ fontFamily: 'var(--font-headline)' }}>
             {t('empty.title')}
           </h1>
-          <p className="mx-auto max-w-xs text-[var(--color-text-secondary)]" style={{ fontFamily: 'var(--font-body)' }}>
+          <p className="mx-auto max-w-md text-sm leading-6 text-[var(--color-text-secondary)]" style={{ fontFamily: 'var(--font-body)' }}>
             {t('empty.subtitle')}
           </p>
         </div>
@@ -470,7 +470,7 @@ export function EmptySession() {
       <div className="absolute bottom-4 left-0 right-0 flex justify-center px-8">
         <div className="flex w-full max-w-3xl flex-col gap-2">
           <div
-            className="glass-panel relative flex flex-col gap-3 rounded-xl p-4"
+            className="glass-panel relative flex flex-col gap-3 rounded-[18px] p-4"
             onDragOver={(event) => event.preventDefault()}
             onDrop={handleDrop}
           >

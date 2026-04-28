@@ -25,9 +25,6 @@ import { ComputerUseSettings } from './ComputerUseSettings'
 import { McpSettings } from './McpSettings'
 import { TerminalSettings } from './TerminalSettings'
 import { useUIStore, type SettingsTab } from '../stores/uiStore'
-import { ClaudeOfficialLogin } from '../components/settings/ClaudeOfficialLogin'
-import { useUpdateStore } from '../stores/updateStore'
-import { formatBytes } from '../lib/formatBytes'
 
 export function Settings() {
   const [activeTab, setActiveTab] = useState<SettingsTab>('providers')
@@ -44,7 +41,7 @@ export function Settings() {
     <div className="flex-1 flex flex-col overflow-hidden bg-[var(--color-surface)]">
       <div className="flex-1 flex overflow-hidden">
         {/* Tab navigation */}
-        <div className="w-[180px] border-r border-[var(--color-border)] py-3 flex-shrink-0 flex flex-col">
+        <div className="w-[204px] border-r border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-3 py-3 flex-shrink-0 flex flex-col">
           <div className="flex-1">
             <TabButton icon="dns" label={t('settings.tab.providers')} active={activeTab === 'providers'} onClick={() => setActiveTab('providers')} />
             <TabButton icon="shield" label={t('settings.tab.permissions')} active={activeTab === 'permissions'} onClick={() => setActiveTab('permissions')} />
@@ -85,9 +82,9 @@ function TabButton({ icon, label, active, onClick }: { icon: string; label: stri
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-left transition-colors ${
+      className={`w-full flex items-center gap-2.5 rounded-[var(--radius-lg)] px-3 py-2.5 text-sm text-left transition-colors ${
         active
-          ? 'bg-[var(--color-surface-selected)] text-[var(--color-text-primary)] font-medium'
+          ? 'bg-[var(--color-surface)] text-[var(--color-text-primary)] font-medium shadow-[0_1px_2px_rgba(0,0,0,0.05)] ring-1 ring-[var(--color-border)]'
           : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)]'
       }`}
     >
@@ -110,7 +107,6 @@ function ProviderSettings() {
     fetchPresets,
     deleteProvider,
     activateProvider,
-    activateOfficial,
     testProvider,
   } = useProviderStore()
   const fetchSettings = useSettingsStore((s) => s.fetchAll)
@@ -164,13 +160,6 @@ function ProviderSettings() {
     await fetchSettings()
   }
 
-  const handleActivateOfficial = async () => {
-    await activateOfficial()
-    await fetchSettings()
-  }
-
-  const isOfficialActive = activeId === null
-
   return (
     <div className="max-w-2xl">
       <div className="flex items-center justify-between mb-4">
@@ -182,37 +171,6 @@ function ProviderSettings() {
           <span className="material-symbols-outlined text-[16px]">add</span>
           {t('settings.providers.addProvider')}
         </Button>
-      </div>
-
-      {/* Official provider — always visible at top */}
-      <div
-        className={`relative flex flex-col rounded-xl border transition-all mb-2 ${
-          isOfficialActive
-            ? 'border-[var(--color-brand)] bg-[var(--color-surface-container)] shadow-[var(--shadow-focus-ring)]'
-            : 'border-[var(--color-border)] hover:border-[var(--color-border-focus)] cursor-pointer'
-        }`}
-      >
-        <div
-          className="flex items-center gap-4 px-4 py-3.5"
-          onClick={() => !isOfficialActive && handleActivateOfficial()}
-        >
-          <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${isOfficialActive ? 'bg-[var(--color-success)]' : 'bg-[var(--color-text-tertiary)]'}`} />
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-[var(--color-text-primary)]">{t('settings.providers.officialName')}</span>
-              {isOfficialActive && (
-                <span className="px-1.5 py-0.5 text-[10px] font-bold rounded border border-[var(--color-brand)]/18 bg-[var(--color-brand)]/14 text-[var(--color-brand)] leading-none">{t('settings.providers.default')}</span>
-              )}
-            </div>
-            <div className="text-xs text-[var(--color-text-tertiary)] mt-0.5">{t('settings.providers.officialDesc')}</div>
-          </div>
-        </div>
-
-        {isOfficialActive && (
-          <div className="px-4 pb-4 pt-3 border-t border-[var(--color-border-separator)]">
-            <ClaudeOfficialLogin />
-          </div>
-        )}
       </div>
 
       {/* Saved providers */}
@@ -1373,28 +1331,9 @@ function PluginSettings() {
 
 // ─── About Settings ──────────────────────────────────────
 
-const GITHUB_REPO = 'https://github.com/NanmiCoder/cc-haha'
-const AUTHOR_GITHUB = 'https://github.com/NanmiCoder'
-const SOCIAL_LINKS = [
-  { name: 'Bilibili', icon: '/icons/bilibili.svg', url: 'https://space.bilibili.com/434377496', label: '程序员阿江-Relakkes' },
-  { name: 'Douyin', icon: '/icons/douyin.svg', url: 'https://www.douyin.com/user/MS4wLjABAAAATJPY7LAlaa5X-c8uNdWkvz0jUGgpw4eeXIwu_8BhvqE', label: '程序员阿江-Relakkes' },
-  { name: 'Xiaohongshu', icon: '/icons/xiaohongshu.svg', url: 'https://www.xiaohongshu.com/user/profile/5f58bd990000000001003753', label: '程序员阿江-Relakkes' },
-] as const
-
 function AboutSettings() {
   const t = useTranslation()
   const [version, setVersion] = useState('')
-  const updateStatus = useUpdateStore((s) => s.status)
-  const availableVersion = useUpdateStore((s) => s.availableVersion)
-  const releaseNotes = useUpdateStore((s) => s.releaseNotes)
-  const progressPercent = useUpdateStore((s) => s.progressPercent)
-  const downloadedBytes = useUpdateStore((s) => s.downloadedBytes)
-  const totalBytes = useUpdateStore((s) => s.totalBytes)
-  const error = useUpdateStore((s) => s.error)
-  const checkedAt = useUpdateStore((s) => s.checkedAt)
-  const checkForUpdates = useUpdateStore((s) => s.checkForUpdates)
-  const installUpdate = useUpdateStore((s) => s.installUpdate)
-  const initialize = useUpdateStore((s) => s.initialize)
 
   useEffect(() => {
     let cancelled = false
@@ -1413,206 +1352,16 @@ function AboutSettings() {
     }
   }, [])
 
-  useEffect(() => {
-    void initialize()
-  }, [initialize])
-
-  const openUrl = (url: string) => {
-    import('@tauri-apps/plugin-shell').then((mod) => mod.open(url)).catch(() => window.open(url, '_blank'))
-  }
-
-  const checkedAtText =
-    checkedAt
-      ? new Date(checkedAt).toLocaleString(undefined, {
-          hour: '2-digit',
-          minute: '2-digit',
-          month: 'short',
-          day: 'numeric',
-        })
-      : null
-
-  const hasKnownProgress = typeof totalBytes === 'number' && totalBytes > 0
-  const downloadedText = formatBytes(downloadedBytes)
-  const updateDescription =
-    updateStatus === 'checking'
-      ? t('update.checking')
-      : updateStatus === 'downloading'
-        ? hasKnownProgress
-          ? t('update.progress', { progress: String(progressPercent) })
-          : t('update.progressBytes', { downloaded: downloadedText })
-        : updateStatus === 'restarting'
-          ? t('update.restarting')
-          : updateStatus === 'available' && availableVersion
-            ? t('update.newVersion', { version: availableVersion })
-            : updateStatus === 'up-to-date'
-              ? t('update.upToDate', { version: version || t('update.currentVersionUnknown') })
-              : error
-                ? t('update.failed', { error })
-                : t('update.idle')
-
   return (
     <div className="w-full min-w-0 max-w-lg mx-auto flex flex-col items-center py-6">
       {/* Logo + App Name + Version */}
-      <img src="/app-icon.png" alt="Claude Code Haha" className="w-20 h-20 mb-4" />
-      <h1 className="text-xl font-bold text-[var(--color-text-primary)]">Claude Code Haha</h1>
+      <img src="/app-icon.png" alt="agent-code" className="w-20 h-20 mb-4" />
+      <h1 className="text-xl font-bold text-[var(--color-text-primary)]">agent-code</h1>
       {version && (
         <span className="text-xs text-[var(--color-text-tertiary)] mt-1">{t('settings.about.version')} {version}</span>
       )}
 
-      {/* GitHub Repo */}
       <div className="mt-6 w-full">
-        <button
-          onClick={() => openUrl(GITHUB_REPO)}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-[var(--color-border)] hover:bg-[var(--color-surface-hover)] transition-colors cursor-pointer"
-        >
-          <img src="/icons/github.svg" alt="GitHub" className="w-5 h-5 opacity-70" />
-          <div className="flex-1 text-left">
-            <div className="text-sm font-medium text-[var(--color-text-primary)]">NanmiCoder/cc-haha</div>
-            <div className="text-xs text-[var(--color-text-tertiary)]">{t('settings.about.starHint')}</div>
-          </div>
-          <span className="material-symbols-outlined text-[16px] text-[var(--color-text-tertiary)]">open_in_new</span>
-        </button>
-      </div>
-
-      <div className="mt-4 w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <div className="text-sm font-medium text-[var(--color-text-primary)]">{t('settings.about.updates')}</div>
-            <div className="text-xs text-[var(--color-text-tertiary)] mt-1">
-              {t('settings.about.updatesDesc')}
-            </div>
-          </div>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => void checkForUpdates()}
-            loading={updateStatus === 'checking'}
-          >
-            {t('update.checkNow')}
-          </Button>
-        </div>
-
-        <div className="mt-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-3">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <div className="text-xs uppercase tracking-[0.14em] text-[var(--color-text-tertiary)]">
-                {t('settings.about.version')}
-              </div>
-              <div className="text-sm font-medium text-[var(--color-text-primary)] mt-1">
-                {version || t('update.currentVersionUnknown')}
-              </div>
-            </div>
-
-            {availableVersion && (
-              <div className="text-right">
-                <div className="text-xs uppercase tracking-[0.14em] text-[var(--color-text-tertiary)]">
-                  {t('update.availableLabel')}
-                </div>
-                <div className="text-sm font-medium text-[var(--color-text-primary)] mt-1">
-                  {availableVersion}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <p className={`mt-3 text-sm ${error ? 'text-[var(--color-error)]' : 'text-[var(--color-text-secondary)]'}`}>
-            {updateDescription}
-          </p>
-
-          {checkedAtText && (
-            <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
-              {t('update.checkedAt', { time: checkedAtText })}
-            </p>
-          )}
-
-          {(updateStatus === 'downloading' || updateStatus === 'restarting') && (
-            <div className="mt-3">
-              <div className="h-1.5 bg-[var(--color-surface-container-low)] rounded-full overflow-hidden">
-                {hasKnownProgress || updateStatus === 'restarting' ? (
-                  <div
-                    className="h-full bg-[var(--color-text-accent)] transition-all duration-300"
-                    style={{ width: `${Math.min(progressPercent, 100)}%` }}
-                  />
-                ) : (
-                  <div className="h-full w-1/3 rounded-full bg-[var(--color-text-accent)]/75 animate-pulse" />
-                )}
-              </div>
-              {!hasKnownProgress && updateStatus === 'downloading' && downloadedBytes > 0 && (
-                <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
-                  {downloadedText}
-                </p>
-              )}
-            </div>
-          )}
-
-          {releaseNotes && availableVersion && (
-            <div className="mt-3 rounded-lg bg-[var(--color-surface-container-low)] px-3 py-3">
-              <div className="text-[11px] uppercase tracking-[0.14em] text-[var(--color-text-tertiary)]">
-                {t('update.releaseNotes')}
-              </div>
-              <MarkdownRenderer
-                content={releaseNotes}
-                variant="document"
-                className="mt-2 text-[13px] leading-6 text-[var(--color-text-secondary)] [&_h1]:text-lg [&_h2]:text-base [&_h3]:text-sm [&_p]:text-[13px] [&_p]:leading-6"
-              />
-            </div>
-          )}
-
-          {availableVersion && (
-            <div className="mt-3 flex justify-end">
-              <Button
-                size="sm"
-                onClick={() => void installUpdate()}
-                loading={updateStatus === 'downloading' || updateStatus === 'restarting'}
-                disabled={updateStatus === 'checking'}
-              >
-                {updateStatus === 'restarting' ? t('update.restarting') : t('update.now')}
-              </Button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Divider */}
-      <div className="w-full border-t border-[var(--color-border)]/40 my-6" />
-
-      {/* Author */}
-      <div className="w-full">
-        <h3 className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-3">{t('settings.about.author')}</h3>
-        <button
-          onClick={() => openUrl(AUTHOR_GITHUB)}
-          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-[var(--color-surface-hover)] transition-colors cursor-pointer"
-        >
-          <img src="/icons/github.svg" alt="GitHub" className="w-4 h-4 opacity-60" />
-          <span className="text-sm text-[var(--color-text-primary)]">程序员阿江-Relakkes</span>
-          <span className="text-xs text-[var(--color-text-tertiary)] ml-auto">GitHub</span>
-        </button>
-      </div>
-
-      {/* Social Media */}
-      <div className="w-full mt-4">
-        <h3 className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-3">{t('settings.about.socialMedia')}</h3>
-        <div className="flex flex-col gap-0.5">
-          {SOCIAL_LINKS.map((link) => (
-            <button
-              key={link.name}
-              onClick={() => openUrl(link.url)}
-              className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-[var(--color-surface-hover)] transition-colors cursor-pointer"
-            >
-              <img src={link.icon} alt={link.name} className="w-4 h-4 opacity-60" />
-              <span className="text-sm text-[var(--color-text-primary)]">{link.label}</span>
-              <span className="text-xs text-[var(--color-text-tertiary)] ml-auto">{link.name}</span>
-            </button>
-          ))}
-          <button
-            onClick={() => openUrl('mailto:relakkes@gmail.com')}
-            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-[var(--color-surface-hover)] transition-colors cursor-pointer"
-          >
-            <span className="material-symbols-outlined text-[16px] opacity-60">mail</span>
-            <span className="text-sm text-[var(--color-text-primary)]">relakkes@gmail.com</span>
-            <span className="text-xs text-[var(--color-text-tertiary)] ml-auto">Email</span>
-          </button>
-        </div>
       </div>
     </div>
   )

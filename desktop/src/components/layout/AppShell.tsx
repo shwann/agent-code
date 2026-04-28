@@ -86,7 +86,7 @@ export function AppShell() {
   }
 
   return (
-    <div className="h-screen flex overflow-hidden bg-[var(--color-surface)]">
+    <div className="h-screen flex overflow-hidden bg-[var(--color-background)]">
       <div
         data-testid="sidebar-shell"
         data-state={sidebarOpen ? 'open' : 'closed'}
@@ -97,7 +97,7 @@ export function AppShell() {
       <main
         id="content-area"
         data-sidebar-state={sidebarOpen ? 'open' : 'closed'}
-        className="min-w-0 flex-1 flex flex-col overflow-hidden"
+        className="min-w-0 flex-1 flex flex-col overflow-hidden bg-[var(--color-surface)]"
       >
         <TabBar />
         <ContentRouter />

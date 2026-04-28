@@ -1,5 +1,5 @@
 [package]
-name = "claude-code-desktop"
+name = "agent-code-desktop"
 version = "0.1.7"
 edition = "2021"
 

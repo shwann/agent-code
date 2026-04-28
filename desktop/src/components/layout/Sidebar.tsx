@@ -133,17 +133,17 @@ export function Sidebar() {
       <div className={`px-3 pb-2 ${isTauri && !isWindows ? 'pt-[44px]' : 'pt-3'}`}>
         <div className={`flex ${sidebarOpen ? 'items-center justify-between gap-3' : 'flex-col items-center gap-2'}`}>
           <div className={`flex min-w-0 items-center ${sidebarOpen ? 'gap-2.5' : 'justify-center'}`}>
-            <img src="/app-icon.png" alt="" className="h-8 w-8 flex-shrink-0" />
+            <img src="/app-icon.png" alt="" className="h-8 w-8 flex-shrink-0 rounded-lg" />
             <span
               className={`sidebar-copy ${sidebarOpen ? 'sidebar-copy--visible' : 'sidebar-copy--hidden'} text-[13px] font-semibold tracking-tight text-[var(--color-text-primary)]`}
               style={{ fontFamily: 'var(--font-headline)' }}
             >
-              Claude Code <span className="text-[var(--color-primary-container)]">Haha</span>
+              AgentCode
             </span>
           </div>
           <div className={`flex items-center ${sidebarOpen ? 'gap-1.5' : 'flex-col gap-2'}`}>
             <a
-              href="https://github.com/NanmiCoder/cc-haha"
+              href="https://github.com"
               target="_blank"
               rel="noopener noreferrer"
               className={`sidebar-copy ${sidebarOpen ? 'sidebar-copy--visible' : 'sidebar-copy--hidden'} inline-flex items-center justify-center rounded-md p-1 text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)]`}
@@ -211,7 +211,7 @@ export function Sidebar() {
             className="sidebar-section sidebar-section--visible relative z-20 flex-none px-3 pb-2"
             style={{ overflow: 'visible' }}
           >
-            <div className="flex h-9 items-center rounded-[14px] border border-[var(--color-sidebar-search-border)] bg-[var(--color-sidebar-search-bg)] pl-1.5 pr-3 transition-colors focus-within:border-[var(--color-border-focus)]">
+            <div className="flex h-9 items-center rounded-[var(--radius-lg)] border border-[var(--color-sidebar-search-border)] bg-[var(--color-sidebar-search-bg)] pl-1.5 pr-3 shadow-[var(--shadow-sidebar-filter)] transition-colors focus-within:border-[var(--color-border-focus)]">
               <ProjectFilter variant="embedded" />
               <span className="mx-2 h-4 w-px bg-[var(--color-border)]/80" aria-hidden="true" />
               <span className="pointer-events-none flex shrink-0 items-center text-[var(--color-text-tertiary)]">
@@ -283,9 +283,9 @@ export function Sidebar() {
                             }}
                             onContextMenu={(e) => handleContextMenu(e, session.id)}
                             className={`
-                              group w-full rounded-[12px] px-3 py-2 text-left text-sm transition-colors duration-200
+                              group w-full rounded-[var(--radius-lg)] px-3 py-2 text-left text-sm transition-colors duration-200
                               ${session.id === activeTabId
-                                ? 'bg-[var(--color-sidebar-item-active)] text-[var(--color-text-primary)]'
+                                ? 'bg-[var(--color-sidebar-item-active)] text-[var(--color-text-primary)] shadow-[0_1px_2px_rgba(0,0,0,0.05)] ring-1 ring-[var(--color-sidebar-item-active-border)]'
                                 : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-sidebar-item-hover)]'
                               }
                             `}

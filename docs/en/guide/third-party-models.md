@@ -5,7 +5,7 @@ This project communicates with LLMs via the Anthropic protocol. By using a proto
 ## How It Works
 
 ```
-claude-code-haha ──Anthropic protocol──▶ LiteLLM Proxy ──OpenAI protocol──▶ Target Model API
+agent-code ──Anthropic protocol──▶ LiteLLM Proxy ──OpenAI protocol──▶ Target Model API
                                           (translation)
 ```
 
@@ -146,7 +146,7 @@ CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
 ### 5. Start and Verify
 
 ```bash
-./bin/claude-haha
+./bin/agent-code
 ```
 
 If everything is configured correctly, you should see the normal chat interface, with your configured target model handling the requests.
@@ -198,7 +198,7 @@ CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
 
 ## Option 3: Other Proxy Tools
 
-The community has built several proxy tools specifically for Claude Code:
+The community has built several proxy tools specifically for agent-code:
 
 | Tool | Description | Link |
 |------|-------------|------|

@@ -11,7 +11,7 @@
       "opus": ""
     },
     "needsApiKey": false,
-    "websiteUrl": "https://www.anthropic.com/claude-code"
+    "websiteUrl": "https://www.anthropic.com/agent-code"
   },
   {
     "id": "deepseek",

@@ -206,13 +206,13 @@ describe('Real Provider Configs', () => {
   })
 
   test('providers.json 和 cc-haha/settings.json 独立于 settings.json', async () => {
-    // 模拟原版 Claude Code 的 settings.json 已存在
+    // 模拟原版 agent-code 的 settings.json 已存在
     await fs.writeFile(
       path.join(tmpDir, 'settings.json'),
       JSON.stringify({
         effortLevel: 'high',
         env: {
-          ANTHROPIC_BASE_URL: 'https://original-claude-code.api.com',
+          ANTHROPIC_BASE_URL: 'https://original-agent-code.api.com',
           ANTHROPIC_API_KEY: 'original-key',
         },
       }, null, 2),
@@ -230,7 +230,7 @@ describe('Real Provider Configs', () => {
 
     // 验证原版 settings.json 没被修改
     const original = JSON.parse(await fs.readFile(path.join(tmpDir, 'settings.json'), 'utf-8'))
-    expect((original.env as Record<string, string>).ANTHROPIC_BASE_URL).toBe('https://original-claude-code.api.com')
+    expect((original.env as Record<string, string>).ANTHROPIC_BASE_URL).toBe('https://original-agent-code.api.com')
     expect((original.env as Record<string, string>).ANTHROPIC_API_KEY).toBe('original-key')
     expect(original.effortLevel).toBe('high')
 

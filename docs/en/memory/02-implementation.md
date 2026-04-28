@@ -1,4 +1,4 @@
-# Claude Code Memory System — Implementation Details
+# agent-code Memory System — Implementation Details
 
 > From system prompt injection to background auto-extraction, dissecting every technical detail of the memory system.
 
@@ -270,7 +270,7 @@ Each time the user sends a query, `findRelevantMemories()` is triggered:
 ### Sonnet Selector Prompt
 
 ```
-You are selecting memories useful for Claude Code to handle the user's query.
+You are selecting memories useful for agent-code to handle the user's query.
 You'll receive the user's query and a list of available memory files (with filenames and descriptions).
 
 Return at most 5 memory filenames that are clearly useful.

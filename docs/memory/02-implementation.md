@@ -1,4 +1,4 @@
-# Claude Code 记忆系统 — 实现原理
+# agent-code 记忆系统 — 实现原理
 
 > 从系统提示词注入到后台自动提取，拆解记忆系统的每一个技术细节。
 
@@ -270,7 +270,7 @@ function hasMemoryWritesSince(messages, sinceUuid): boolean {
 ### Sonnet 选择器的提示词
 
 ```
-你正在选择对 Claude Code 处理用户查询有用的记忆。
+你正在选择对 agent-code 处理用户查询有用的记忆。
 你将收到用户查询和可用记忆文件列表（含文件名和描述）。
 
 返回最多 5 个明确有用的记忆文件名。

@@ -1,14 +1,14 @@
 {
-  "name": "claude-code-local",
+  "name": "agent-code-local",
   "version": "999.0.0-local",
   "private": true,
   "type": "module",
   "bin": {
-    "claude-haha": "./bin/claude-haha"
+    "agent-code": "./bin/agent-code"
   },
   "scripts": {
-    "claude-haha": "bun run ./bin/claude-haha",
-    "start": "bun run ./bin/claude-haha",
+    "agent-code": "bun run ./bin/agent-code",
+    "start": "bun run ./bin/agent-code",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs"

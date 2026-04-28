@@ -28,7 +28,7 @@ const MAX_RELEASE_NOTES_SHOWN = 5
 export const CHANGELOG_URL =
   'https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md'
 const RAW_CHANGELOG_URL =
-  'https://raw.githubusercontent.com/anthropics/claude-code/refs/heads/main/CHANGELOG.md'
+  'https://raw.githubusercontent.com/anthropics/agent-code/refs/heads/main/CHANGELOG.md'
 
 /**
  * Get the path for the cached changelog file.

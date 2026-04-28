@@ -504,12 +504,12 @@ export function ChatInput({ variant = 'default' }: ChatInputProps) {
   const slashCommandsLabel = isHeroComposer ? t('empty.slashCommands') : t('chat.slashCommands')
 
   return (
-    <div className={isHeroComposer ? 'bg-[var(--color-surface)] px-8 pb-4' : 'bg-[var(--color-surface)] px-4 py-4'}>
-      <div className={isHeroComposer ? 'mx-auto flex w-full max-w-3xl flex-col gap-2' : 'mx-auto max-w-[860px]'}>
+    <div className={isHeroComposer ? 'bg-[var(--color-surface)] px-8 pb-5' : 'bg-[var(--color-surface)] px-4 py-4'}>
+      <div className={isHeroComposer ? 'mx-auto flex w-full max-w-3xl flex-col gap-2' : 'mx-auto max-w-[900px]'}>
         <div
           className={isHeroComposer
-            ? 'glass-panel relative flex flex-col gap-3 rounded-xl p-4 transition-colors'
-            : 'glass-panel relative rounded-xl p-4 transition-colors'}
+            ? 'glass-panel relative flex flex-col gap-3 rounded-[18px] p-4 transition-colors'
+            : 'glass-panel relative rounded-[18px] p-4 transition-colors'}
           onDragOver={(event) => event.preventDefault()}
           onDrop={handleDrop}
         >

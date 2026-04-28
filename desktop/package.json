@@ -1,5 +1,5 @@
 {
-  "name": "claude-code-desktop",
+  "name": "agent-code-desktop",
   "private": true,
   "version": "0.1.7",
   "type": "module",

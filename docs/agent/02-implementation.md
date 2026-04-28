@@ -1,4 +1,4 @@
-# Claude Code 多 Agent 系统 — 实现原理
+# agent-code 多 Agent 系统 — 实现原理
 
 > 深入剖析多 Agent 编排的架构设计、生成流程、上下文传递和协作机制。
 
@@ -12,7 +12,7 @@
 
 ## 一、架构总览
 
-Claude Code 的多 Agent 系统由以下核心模块组成：
+agent-code 的多 Agent 系统由以下核心模块组成：
 
 ### 5 大核心模块
 
@@ -323,7 +323,7 @@ Agent System Prompt        ← agentDefinition.getSystemPrompt()
   ↓                          - 其他：替换默认
 Custom System Prompt       ← --system-prompt 参数
   ↓
-Default System Prompt      ← Claude Code 标准提示词
+Default System Prompt      ← agent-code 标准提示词
   ↓
 Append System Prompt       ← 追加到末尾
 ```

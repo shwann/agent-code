@@ -21,6 +21,7 @@ const zhSidebar = [
     items: [
       { text: '安装与启动', link: '/guide/quick-start' },
       { text: '环境变量', link: '/guide/env-vars' },
+      { text: 'Docker 部署', link: '/guide/docker-deployment' },
       { text: '第三方模型', link: '/guide/third-party-models' },
       { text: '全局使用', link: '/guide/global-usage' },
       { text: '常见问题', link: '/guide/faq' },
@@ -177,8 +178,8 @@ const enSidebar = [
 ]
 
 export default withMermaid(defineConfig({
-  title: 'Claude Code Haha',
-  description: '基于 Claude Code 泄露源码修复的本地可运行版本，支持接入任意 Anthropic 兼容 API',
+  title: 'agent-code',
+  description: '基于 agent-code 泄露源码修复的本地可运行版本，支持接入任意 Anthropic 兼容 API',
   lastUpdated: true,
   base: '/',
 
@@ -214,7 +215,7 @@ export default withMermaid(defineConfig({
     en: {
       label: 'English',
       lang: 'en-US',
-      description: 'A locally runnable version repaired from the leaked Claude Code source, with support for any Anthropic-compatible API endpoint.',
+      description: 'A locally runnable version repaired from the leaked agent-code source, with support for any Anthropic-compatible API endpoint.',
       themeConfig: {
         editLink: {
           pattern: 'https://github.com/NanmiCoder/cc-haha/edit/main/docs/:path',
@@ -242,7 +243,7 @@ export default withMermaid(defineConfig({
     ],
     footer: {
       message: 'Released under the MIT License.',
-      copyright: 'Copyright 2026 Claude Code Haha Contributors',
+      copyright: 'Copyright 2026 agent-code Contributors',
     },
   },
 }))

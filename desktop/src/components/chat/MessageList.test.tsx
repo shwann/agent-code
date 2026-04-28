@@ -585,7 +585,7 @@ describe('MessageList nested tool calls', () => {
               type: 'error',
               code: 'CLI_START_FAILED',
               message:
-                'CLI exited during startup (code 1): Claude Code on Windows requires git-bash (https://git-scm.com/downloads/win).',
+                'CLI exited during startup (code 1): agent-code on Windows requires git-bash (https://git-scm.com/downloads/win).',
               timestamp: 1,
             },
           ],
@@ -598,7 +598,7 @@ describe('MessageList nested tool calls', () => {
     expect(screen.getByText('Failed to start CLI process.')).toBeTruthy()
     expect(
       screen.getByText(
-        'CLI exited during startup (code 1): Claude Code on Windows requires git-bash (https://git-scm.com/downloads/win).',
+        'CLI exited during startup (code 1): agent-code on Windows requires git-bash (https://git-scm.com/downloads/win).',
       ),
     ).toBeTruthy()
   })

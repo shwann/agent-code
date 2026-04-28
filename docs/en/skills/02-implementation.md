@@ -1,4 +1,4 @@
-# Claude Code Skills System -- Implementation Details
+# agent-code skills system -- Implementation Details
 
 > A deep dive into how Skills are discovered, loaded, injected, executed, and managed.
 

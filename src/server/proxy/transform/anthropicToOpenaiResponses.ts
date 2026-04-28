@@ -41,7 +41,7 @@ export function anthropicToOpenaiResponses(body: AnthropicRequest): OpenAIRespon
   }
 
   // max_tokens — omit to let upstream provider use its own default/max.
-  // Claude Code sends very large values that exceed many providers' limits.
+  // agent-code sends very large values that exceed many providers' limits.
 
   // temperature & top_p
   if (body.temperature !== undefined) result.temperature = body.temperature

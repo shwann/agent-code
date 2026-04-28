@@ -2,7 +2,7 @@
 
 
 ```text
-bin/claude-haha          # Entry script
+bin/agent-code          # Entry script
 preload.ts               # Bun preload (sets MACRO globals)
 .env.example             # Environment variable template
 src/

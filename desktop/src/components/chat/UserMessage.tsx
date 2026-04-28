@@ -16,7 +16,7 @@ export function UserMessage({ content, attachments, onRewind, rewindLabel }: Pro
     <div className="group mb-5 flex justify-end">
       <div
         data-message-shell="user"
-        className="flex min-w-0 w-full max-w-[82%] flex-col items-end gap-2 sm:max-w-[78%] lg:max-w-[72%]"
+        className="flex min-w-0 w-full max-w-[82%] flex-col items-end gap-2 sm:max-w-[78%] lg:max-w-[70%]"
       >
         {attachments && attachments.length > 0 && (
           <AttachmentGallery attachments={attachments} variant="message" />
@@ -24,8 +24,8 @@ export function UserMessage({ content, attachments, onRewind, rewindLabel }: Pro
 
         {hasText && (
           <div
-            className="bg-[var(--color-surface-user-msg)] px-4 py-3 text-sm leading-relaxed text-[var(--color-text-primary)] whitespace-pre-wrap break-words"
-            style={{ borderRadius: '18px 4px 18px 18px' }}
+            className="border border-[var(--color-border)] bg-[var(--color-surface-user-msg)] px-4 py-3 text-sm leading-relaxed text-[var(--color-text-primary)] whitespace-pre-wrap break-words shadow-[0_1px_2px_rgba(0,0,0,0.04)]"
+            style={{ borderRadius: '18px 8px 18px 18px' }}
           >
             {content}
           </div>
