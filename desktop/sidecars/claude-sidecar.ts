@@ -6,9 +6,9 @@
  * 把所有运行模式合并到同一个二进制里，runtime 只保留一份；调用方通过
  * 第一个 positional 参数选择模式：
  *
- *   claude-sidecar server   --app-root <path> --host 127.0.0.1 --port 12345
- *   claude-sidecar cli      --app-root <path> [其它 CLI 参数...]
- *   claude-sidecar adapters --app-root <path> [--feishu] [--telegram]
+ *   agent-code-sidecar server   --app-root <path> --host 127.0.0.1 --port 12345
+ *   agent-code-sidecar cli      --app-root <path> [其它 CLI 参数...]
+ *   agent-code-sidecar adapters --app-root <path> [--feishu] [--telegram]
  *
  * 任何模式都必须先做 process.env / process.argv 设置，再 await 进入相应的
  * 子模块树。原因：src/server/index.ts、src/entrypoints/cli.tsx、以及
@@ -22,7 +22,7 @@ import { parseLauncherArgs, resolveSidecarInvocation } from './launcherRouting'
 const rawArgs = process.argv.slice(2)
 const invocation = resolveSidecarInvocation(rawArgs)
 if (!invocation.mode) {
-  console.error('claude-sidecar: missing mode argument (expected "server", "cli" or "adapters")')
+  console.error('agent-code-sidecar: missing mode argument (expected "server", "cli" or "adapters")')
   process.exit(2)
 }
 const mode = invocation.mode
@@ -45,7 +45,7 @@ if (mode === 'adapters') {
   } else if (mode === 'cli') {
     await import('../../src/entrypoints/cli.tsx')
   } else {
-    console.error(`claude-sidecar: unknown mode "${mode}" (expected "server", "cli" or "adapters")`)
+    console.error(`agent-code-sidecar: unknown mode "${mode}" (expected "server", "cli" or "adapters")`)
     process.exit(2)
   }
 }
@@ -73,12 +73,12 @@ async function runAdapters(rawArgs: string[]): Promise<void> {
       enableTelegram = true
       continue
     }
-    console.warn(`claude-sidecar adapters: ignoring unknown arg "${arg}"`)
+    console.warn(`agent-code-sidecar adapters: ignoring unknown arg "${arg}"`)
   }
 
   if (!enableFeishu && !enableTelegram) {
     console.error(
-      'claude-sidecar adapters: must enable at least one of --feishu / --telegram',
+      'agent-code-sidecar adapters: must enable at least one of --feishu / --telegram',
     )
     process.exit(2)
   }
@@ -91,48 +91,72 @@ async function runAdapters(rawArgs: string[]): Promise<void> {
   await import('../../preload.ts')
 
   // 在 import adapter 之前先用同一份 loadConfig() 检查凭据。adapter 的
-  // top-level 代码里已经有 if (!cred) process.exit(1)，但那会把整个
-  // 进程拖死 —— 包括另一个本来正常的 adapter。这里提前 gate 一下，
-  // 缺凭据的 adapter 直接跳过、不 import。
-  const { loadConfig } = await import('../../adapters/common/config.ts')
-  const config = loadConfig()
+  // top-level 代码里已经有 if (!cred) process.exit(1)。这里提前 gate：
+  // 缺凭据时保持 sidecar 存活并等待用户写入 adapters.json；凭据出现后再
+  // import 对应 adapter，让 Docker / 桌面端无需重启也能连接上。
+  const { getConfigPath, loadConfig } = await import('../../adapters/common/config.ts')
+  const started = new Set<'feishu' | 'telegram'>()
+  const waitingLogged = new Set<'feishu' | 'telegram'>()
+  let pollTimer: ReturnType<typeof setInterval> | null = null
 
-  let started = 0
+  const maybeStartAdapters = async () => {
+    const config = loadConfig()
 
-  if (enableFeishu) {
-    if (!config.feishu.appId || !config.feishu.appSecret) {
-      console.warn(
-        '[claude-sidecar] --feishu requested but FEISHU_APP_ID / FEISHU_APP_SECRET missing in env or ~/.claude/adapters.json — skipping',
-      )
-    } else {
-      console.log('[claude-sidecar] starting Feishu adapter')
-      // 副作用 import：feishu/index.ts 顶层会自动 new WSClient + start()
-      await import('../../adapters/feishu/index.ts')
-      started += 1
+    if (enableFeishu && !started.has('feishu')) {
+      if (!config.feishu.appId || !config.feishu.appSecret) {
+        if (!waitingLogged.has('feishu')) {
+          console.log(
+            `[agent-code-sidecar] Feishu adapter waiting for user config at ${getConfigPath()}`,
+          )
+          waitingLogged.add('feishu')
+        }
+      } else {
+        console.log('[agent-code-sidecar] starting Feishu adapter')
+        // 副作用 import：feishu/index.ts 顶层会自动 new WSClient + start()
+        await import('../../adapters/feishu/index.ts')
+        started.add('feishu')
+      }
+    }
+
+    if (enableTelegram && !started.has('telegram')) {
+      if (!config.telegram.botToken) {
+        if (!waitingLogged.has('telegram')) {
+          console.log(
+            `[agent-code-sidecar] Telegram adapter waiting for user config at ${getConfigPath()}`,
+          )
+          waitingLogged.add('telegram')
+        }
+      } else {
+        console.log('[agent-code-sidecar] starting Telegram adapter')
+        // 副作用 import：telegram/index.ts 顶层会自动 bot.start()
+        await import('../../adapters/telegram/index.ts')
+        started.add('telegram')
+      }
+    }
+
+    const allRequestedStarted =
+      (!enableFeishu || started.has('feishu')) &&
+      (!enableTelegram || started.has('telegram'))
+    if (allRequestedStarted && pollTimer) {
+      clearInterval(pollTimer)
+      pollTimer = null
     }
   }
 
-  if (enableTelegram) {
-    if (!config.telegram.botToken) {
-      console.warn(
-        '[claude-sidecar] --telegram requested but TELEGRAM_BOT_TOKEN missing in env or ~/.claude/adapters.json — skipping',
-      )
-    } else {
-      console.log('[claude-sidecar] starting Telegram adapter')
-      // 副作用 import：telegram/index.ts 顶层会自动 bot.start()
-      await import('../../adapters/telegram/index.ts')
-      started += 1
-    }
-  }
+  await maybeStartAdapters()
 
-  if (started === 0) {
-    console.error(
-      '[claude-sidecar] no adapter could be started — check credentials in env or ~/.claude/adapters.json',
-    )
-    process.exit(1)
-  }
+  const shouldKeepPolling =
+    (enableFeishu && !started.has('feishu')) ||
+    (enableTelegram && !started.has('telegram'))
 
-  // 让进程保持存活：两个 adapter 都通过 long-lived WebSocket（Lark WSClient
-  // / grammY long-polling）持有 event loop，自然不会退出。这里不需要额外
-  // setInterval 兜底。两个 adapter 自己注册的 SIGINT handler 都会触发。
+  if (shouldKeepPolling) {
+    pollTimer = setInterval(() => {
+      void maybeStartAdapters().catch((err) => {
+        console.error(
+          '[agent-code-sidecar] adapter config check failed:',
+          err instanceof Error ? err.message : err,
+        )
+      })
+    }, 5000)
+  }
 }

@@ -1,3 +1,5 @@
+name: agent-code
+
 services:
   app:
     build:
@@ -20,10 +22,12 @@ services:
       API_TIMEOUT_MS: ${API_TIMEOUT_MS:-600000}
       DISABLE_TELEMETRY: ${DISABLE_TELEMETRY:-1}
       CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: ${CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC:-1}
+      SERVER_ENABLE_COMPUTER_USE: ${SERVER_ENABLE_COMPUTER_USE:-${VITE_ENABLE_COMPUTER_USE:-1}}
+      VITE_ENABLE_COMPUTER_USE: ${VITE_ENABLE_COMPUTER_USE:-${SERVER_ENABLE_COMPUTER_USE:-1}}
       TZ: ${TZ:-Asia/Shanghai}
     volumes:
-      - claude_data:/root/.claude
-      - ${CC_HAHA_WORKSPACE_DIR:-./workspace}:/workspace
+      - agent_code_data:/root/.claude
+      - ${AGENT_CODE_WORKSPACE_DIR:-${CC_HAHA_WORKSPACE_DIR:-./workspace}}:/workspace
     expose:
       - "3456"
 
@@ -37,9 +41,11 @@ services:
     environment:
       ADAPTER_SERVER_URL: ws://app:3456
       SERVER_AUTH_TOKEN: ${SERVER_AUTH_TOKEN:?set SERVER_AUTH_TOKEN in .env}
+      FEISHU_APP_ID: ${FEISHU_APP_ID:-}
+      FEISHU_APP_SECRET: ${FEISHU_APP_SECRET:-}
       TZ: ${TZ:-Asia/Shanghai}
     volumes:
-      - claude_data:/root/.claude
+      - agent_code_data:/root/.claude
     depends_on:
       - app
     command: ["bun", "run", "desktop/sidecars/claude-sidecar.ts", "adapters", "--feishu"]
@@ -56,16 +62,17 @@ services:
     environment:
       SERVER_AUTH_TOKEN: ${SERVER_AUTH_TOKEN:?set SERVER_AUTH_TOKEN in .env}
     ports:
-      - "${CC_HAHA_HTTP_PORT:-8080}:80"
+      - "${AGENT_CODE_HTTP_PORT:-${CC_HAHA_HTTP_PORT:-8080}}:80"
 
 volumes:
-  claude_data:
+  agent_code_data:
+    name: agent-code-data
 
 
 
 
 #docker builder prune -af 
-#docker compose down 
+#docker compose down
 #docker compose build
 #docker compose up
 #docker compose down && docker compose build && docker compose up -d 

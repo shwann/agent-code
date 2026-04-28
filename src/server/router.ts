@@ -19,6 +19,7 @@ import { handleSkillsApi } from './api/skills.js'
 import { handleComputerUseApi } from './api/computer-use.js'
 import { handleHahaOAuthApi } from './api/haha-oauth.js'
 import { handleMcpApi } from './api/mcp.js'
+import { getFeatureFlags } from './api/features.js'
 
 export async function handleApiRequest(req: Request, url: URL): Promise<Response> {
   const path = url.pathname
@@ -85,6 +86,12 @@ export async function handleApiRequest(req: Request, url: URL): Promise<Response
       return handlePluginsApi(req, url, segments)
 
     case 'computer-use':
+      if (!getFeatureFlags().computerUse) {
+        return Response.json(
+          { error: 'FEATURE_DISABLED', message: 'Computer Use is disabled by server configuration' },
+          { status: 403 },
+        )
+      }
       return handleComputerUseApi(req, url, segments)
 
     case 'filesystem':

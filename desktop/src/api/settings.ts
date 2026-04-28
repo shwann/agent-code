@@ -1,4 +1,5 @@
 import { api } from './client'
+import type { FeatureFlags } from '../types/features'
 import type { PermissionMode, UserSettings } from '../types/settings'
 
 export type CliLauncherStatus = {
@@ -34,5 +35,9 @@ export const settingsApi = {
 
   getCliLauncherStatus() {
     return api.get<CliLauncherStatus>('/api/settings/cli-launcher')
+  },
+
+  getFeatures() {
+    return api.get<FeatureFlags>('/api/settings/features')
   },
 }

@@ -963,7 +963,7 @@ async function handleMessage(data: any): Promise<void> {
       if (pairText) {
         const success = tryPair(pairText.trim(), { userId: senderOpenId, displayName: 'Feishu User' }, 'feishu')
         if (success) {
-          await sendText(chatId, '✅ 配对成功！现在可以开始聊天了。\n\n发送消息即可与 Claude 对话。')
+          await sendText(chatId, '✅ 配对成功！现在可以开始聊天了。\n\n发送消息即可与 Agent-Code 对话。')
         } else {
           await sendText(chatId, '🔒 未授权。请在 agent-code 桌面端生成配对码后发送给我。')
         }

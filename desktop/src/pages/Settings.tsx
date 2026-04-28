@@ -29,13 +29,20 @@ import { useUIStore, type SettingsTab } from '../stores/uiStore'
 export function Settings() {
   const [activeTab, setActiveTab] = useState<SettingsTab>('providers')
   const pendingSettingsTab = useUIStore((s) => s.pendingSettingsTab)
+  const isComputerUseEnabled = useSettingsStore((s) => s.features.computerUse)
   const t = useTranslation()
 
   useEffect(() => {
     if (!pendingSettingsTab) return
-    setActiveTab(pendingSettingsTab)
+    setActiveTab(pendingSettingsTab === 'computerUse' && !isComputerUseEnabled ? 'general' : pendingSettingsTab)
     useUIStore.getState().setPendingSettingsTab(null)
-  }, [pendingSettingsTab])
+  }, [isComputerUseEnabled, pendingSettingsTab])
+
+  useEffect(() => {
+    if (activeTab === 'computerUse' && !isComputerUseEnabled) {
+      setActiveTab('general')
+    }
+  }, [activeTab, isComputerUseEnabled])
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-[var(--color-surface)]">
@@ -52,7 +59,9 @@ export function Settings() {
             <TabButton icon="smart_toy" label={t('settings.tab.agents')} active={activeTab === 'agents'} onClick={() => setActiveTab('agents')} />
             <TabButton icon="auto_awesome" label={t('settings.tab.skills')} active={activeTab === 'skills'} onClick={() => setActiveTab('skills')} />
             <TabButton icon="extension" label={t('settings.tab.plugins')} active={activeTab === 'plugins'} onClick={() => setActiveTab('plugins')} />
-            <TabButton icon="mouse" label={t('settings.tab.computerUse')} active={activeTab === 'computerUse'} onClick={() => setActiveTab('computerUse')} />
+            {isComputerUseEnabled && (
+              <TabButton icon="mouse" label={t('settings.tab.computerUse')} active={activeTab === 'computerUse'} onClick={() => setActiveTab('computerUse')} />
+            )}
           </div>
           <div className="border-t border-[var(--color-border)]/40 pt-1">
             <TabButton icon="info" label={t('settings.tab.about')} active={activeTab === 'about'} onClick={() => setActiveTab('about')} />
@@ -70,7 +79,7 @@ export function Settings() {
           {activeTab === 'agents' && <AgentsSettings />}
           {activeTab === 'skills' && <SkillSettings />}
           {activeTab === 'plugins' && <PluginSettings />}
-          {activeTab === 'computerUse' && <ComputerUseSettings />}
+          {activeTab === 'computerUse' && isComputerUseEnabled && <ComputerUseSettings />}
           {activeTab === 'about' && <AboutSettings />}
         </div>
       </div>

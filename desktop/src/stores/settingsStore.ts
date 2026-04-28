@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { settingsApi } from '../api/settings'
 import { modelsApi } from '../api/models'
+import type { FeatureFlags } from '../types/features'
 import type { PermissionMode, EffortLevel, ModelInfo, ThemeMode } from '../types/settings'
 import type { Locale } from '../i18n'
 import { useUIStore } from './uiStore'
@@ -24,6 +25,7 @@ type SettingsStore = {
   locale: Locale
   theme: ThemeMode
   skipWebFetchPreflight: boolean
+  features: FeatureFlags
   isLoading: boolean
   error: string | null
 
@@ -45,18 +47,20 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   locale: getStoredLocale(),
   theme: useUIStore.getState().theme,
   skipWebFetchPreflight: true,
+  features: { computerUse: true },
   isLoading: false,
   error: null,
 
   fetchAll: async () => {
     set({ isLoading: true, error: null })
     try {
-      const [{ mode }, modelsRes, { model }, { level }, userSettings] = await Promise.all([
+      const [{ mode }, modelsRes, { model }, { level }, userSettings, features] = await Promise.all([
         settingsApi.getPermissionMode(),
         modelsApi.list(),
         modelsApi.getCurrent(),
         modelsApi.getEffort(),
         settingsApi.getUser(),
+        settingsApi.getFeatures(),
       ])
       const theme = userSettings.theme === 'dark' ? 'dark' : 'light'
       useUIStore.getState().setTheme(theme)
@@ -68,6 +72,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         effortLevel: level,
         theme,
         skipWebFetchPreflight: userSettings.skipWebFetchPreflight !== false,
+        features,
         isLoading: false,
         error: null,
       })

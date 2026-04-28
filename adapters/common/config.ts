@@ -47,7 +47,7 @@ export type AdapterConfig = {
   feishu: FeishuConfig
 }
 
-function getConfigPath(): string {
+export function getConfigPath(): string {
   const configDir = process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude')
   return path.join(configDir, 'adapters.json')
 }

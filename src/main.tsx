@@ -1608,9 +1608,12 @@ async function run(): Promise<CommanderCommand> {
     if (process.platform === 'darwin' || process.platform === 'win32') {
       try {
         const {
+          isComputerUseFeatureEnabled
+        } = await import('src/utils/computerUse/common.js');
+        const {
           getChicagoEnabled
         } = await import('src/utils/computerUse/gates.js');
-        if (getChicagoEnabled()) {
+        if (isComputerUseFeatureEnabled() && getChicagoEnabled()) {
           const {
             setupComputerUseMCP
           } = await import('src/utils/computerUse/setup.js');

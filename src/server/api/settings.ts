@@ -13,6 +13,7 @@
 import { SettingsService } from '../services/settingsService.js'
 import { ApiError, errorResponse } from '../middleware/errorHandler.js'
 import { ensureDesktopCliLauncherInstalled } from '../services/desktopCliLauncherService.js'
+import { getFeatureFlags } from './features.js'
 
 const settingsService = new SettingsService()
 
@@ -51,6 +52,10 @@ export async function handleSettingsApi(
       case 'cli-launcher':
         if (method !== 'GET') throw methodNotAllowed(method)
         return Response.json(await ensureDesktopCliLauncherInstalled())
+
+      case 'features':
+        if (method !== 'GET') throw methodNotAllowed(method)
+        return Response.json(getFeatureFlags())
 
       default:
         throw ApiError.notFound(`Unknown settings endpoint: ${sub}`)
