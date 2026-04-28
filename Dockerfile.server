@@ -10,12 +10,19 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 COPY package.json bunfig.toml ./
-RUN bun install
+COPY bun.lock ./
+RUN bun install --production --frozen-lockfile
 
 COPY adapters/package.json adapters/bun.lock ./adapters/
-RUN cd adapters && bun install --frozen-lockfile
+RUN cd adapters && bun install --production --frozen-lockfile
 
-COPY . .
+COPY preload.ts tsconfig.json ./
+COPY bin/ ./bin/
+COPY src/ ./src/
+COPY adapters/ ./adapters/
+COPY desktop/sidecars/ ./desktop/sidecars/
+COPY runtime/ ./runtime/
+COPY stubs/ ./stubs/
 COPY docker/entrypoint.server.sh /usr/local/bin/agent-code-entrypoint
 COPY docker/run-combined.sh /usr/local/bin/agent-code-combined
 RUN chmod +x /usr/local/bin/agent-code-entrypoint /usr/local/bin/agent-code-combined
