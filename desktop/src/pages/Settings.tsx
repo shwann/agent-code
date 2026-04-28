@@ -44,11 +44,13 @@ export function Settings() {
     }
   }, [activeTab, isComputerUseEnabled])
 
+  const activeMeta = getSettingsTabMeta(activeTab, t)
+
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-[var(--color-surface)]">
+    <div className="settings-shell flex-1 flex flex-col overflow-hidden">
       <div className="flex-1 flex overflow-hidden">
         {/* Tab navigation */}
-        <div className="w-[204px] border-r border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-3 py-3 flex-shrink-0 flex flex-col">
+        <div className="settings-nav w-[216px] border-r border-[var(--color-border)] px-3 py-4 flex-shrink-0 flex flex-col">
           <div className="flex-1">
             <TabButton icon="dns" label={t('settings.tab.providers')} active={activeTab === 'providers'} onClick={() => setActiveTab('providers')} />
             <TabButton icon="shield" label={t('settings.tab.permissions')} active={activeTab === 'permissions'} onClick={() => setActiveTab('permissions')} />
@@ -69,31 +71,72 @@ export function Settings() {
         </div>
 
         {/* Tab content */}
-        <div className="flex-1 overflow-y-auto px-8 py-6">
-          {activeTab === 'providers' && <ProviderSettings />}
-          {activeTab === 'permissions' && <PermissionSettings />}
-          {activeTab === 'general' && <GeneralSettings />}
-          {activeTab === 'adapters' && <AdapterSettings />}
-          {activeTab === 'terminal' && <TerminalSettings />}
-          {activeTab === 'mcp' && <McpSettings />}
-          {activeTab === 'agents' && <AgentsSettings />}
-          {activeTab === 'skills' && <SkillSettings />}
-          {activeTab === 'plugins' && <PluginSettings />}
-          {activeTab === 'computerUse' && isComputerUseEnabled && <ComputerUseSettings />}
-          {activeTab === 'about' && <AboutSettings />}
+        <div className="settings-content flex-1 overflow-y-auto px-8 py-7">
+          <div className="mb-6 max-w-4xl">
+            <div className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-brand)]">
+              {t('settings.title')}
+            </div>
+            <h1 className="mt-1 text-2xl font-semibold text-[var(--color-text-primary)]" style={{ fontFamily: 'var(--font-headline)' }}>
+              {activeMeta.label}
+            </h1>
+            <p className="mt-1 max-w-2xl text-sm leading-6 text-[var(--color-text-secondary)]">
+              {activeMeta.description}
+            </p>
+          </div>
+          <div className="max-w-4xl">
+            {activeTab === 'providers' && <ProviderSettings />}
+            {activeTab === 'permissions' && <PermissionSettings />}
+            {activeTab === 'general' && <GeneralSettings />}
+            {activeTab === 'adapters' && <AdapterSettings />}
+            {activeTab === 'terminal' && <TerminalSettings />}
+            {activeTab === 'mcp' && <McpSettings />}
+            {activeTab === 'agents' && <AgentsSettings />}
+            {activeTab === 'skills' && <SkillSettings />}
+            {activeTab === 'plugins' && <PluginSettings />}
+            {activeTab === 'computerUse' && isComputerUseEnabled && <ComputerUseSettings />}
+            {activeTab === 'about' && <AboutSettings />}
+          </div>
         </div>
       </div>
     </div>
   )
 }
 
+function getSettingsTabMeta(tab: SettingsTab, t: ReturnType<typeof useTranslation>) {
+  switch (tab) {
+    case 'providers':
+      return { label: t('settings.tab.providers'), description: t('settings.providers.description') }
+    case 'permissions':
+      return { label: t('settings.tab.permissions'), description: t('settings.permissions.description') }
+    case 'general':
+      return { label: t('settings.tab.general'), description: t('settings.general.description') }
+    case 'adapters':
+      return { label: t('settings.tab.adapters'), description: t('settings.adapters.description') }
+    case 'terminal':
+      return { label: t('settings.tab.terminal'), description: t('settings.terminal.description') }
+    case 'mcp':
+      return { label: t('settings.tab.mcp'), description: t('settings.mcp.description') }
+    case 'agents':
+      return { label: t('settings.tab.agents'), description: t('settings.agents.description') }
+    case 'skills':
+      return { label: t('settings.tab.skills'), description: t('settings.skills.description') }
+    case 'plugins':
+      return { label: t('settings.tab.plugins'), description: t('settings.plugins.description') }
+    case 'computerUse':
+      return { label: t('settings.tab.computerUse'), description: t('settings.computerUse.description') }
+    case 'about':
+      return { label: t('settings.tab.about'), description: t('settings.about.description') }
+  }
+}
+
 function TabButton({ icon, label, active, onClick }: { icon: string; label: string; active: boolean; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-2.5 rounded-[var(--radius-lg)] px-3 py-2.5 text-sm text-left transition-colors ${
+      data-active={active ? 'true' : 'false'}
+      className={`settings-tab-button w-full flex items-center gap-2.5 rounded-[var(--radius-lg)] px-3 py-2.5 text-sm text-left ${
         active
-          ? 'bg-[var(--color-surface)] text-[var(--color-text-primary)] font-medium shadow-[0_1px_2px_rgba(0,0,0,0.05)] ring-1 ring-[var(--color-border)]'
+          ? 'bg-[var(--color-surface)] text-[var(--color-text-primary)] font-medium shadow-[var(--shadow-subtle)] ring-1 ring-[var(--color-border)]'
           : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)]'
       }`}
     >
@@ -170,7 +213,7 @@ function ProviderSettings() {
   }
 
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-3xl">
       <div className="flex items-center justify-between mb-4">
         <div>
           <h2 className="text-base font-semibold text-[var(--color-text-primary)]">{t('settings.providers.title')}</h2>
@@ -196,10 +239,10 @@ function ProviderSettings() {
             return (
               <div
                 key={provider.id}
-                className={`relative flex items-center gap-4 px-4 py-3.5 rounded-xl border transition-all group ${
+                className={`interactive-surface relative flex items-center gap-4 px-4 py-3.5 rounded-xl border group ${
                   isActive
                     ? 'border-[var(--color-brand)] bg-[var(--color-surface-container)] shadow-[var(--shadow-focus-ring)]'
-                    : 'border-[var(--color-border)] hover:border-[var(--color-border-focus)]'
+                    : 'premium-card'
                 }`}
               >
                 <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${isActive ? 'bg-[var(--color-success)]' : 'bg-[var(--color-text-tertiary)]'}`} />

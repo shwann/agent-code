@@ -217,7 +217,7 @@ export function DirectoryPicker({ value, onChange, onCreateProject }: Props) {
       {isOpen && dropdownPos && createPortal(
         <div
           ref={dropdownRef}
-          className="w-[400px] bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)] rounded-xl shadow-[var(--shadow-dropdown)] overflow-hidden"
+          className="floating-menu w-[400px] overflow-hidden rounded-xl"
           style={{
             position: 'fixed',
             left: dropdownPos.left,
@@ -244,7 +244,7 @@ export function DirectoryPicker({ value, onChange, onCreateProject }: Props) {
                       <button
                         key={project.projectPath}
                         onClick={() => handleSelect(project.realPath)}
-                        className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-[var(--color-surface-hover)] ${
+                        className={`menu-item w-full flex items-center gap-3 px-4 py-3 text-left ${
                           isSelected ? 'bg-[var(--color-surface-selected)]' : ''
                         }`}
                       >
@@ -280,7 +280,7 @@ export function DirectoryPicker({ value, onChange, onCreateProject }: Props) {
                 {onCreateProject && (
                   <button
                     onClick={handleCreateProject}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[var(--color-surface-hover)] transition-colors"
+                    className="menu-item w-full flex items-center gap-3 px-4 py-3 text-left"
                   >
                     <span className="material-symbols-outlined text-[20px] text-[var(--color-text-tertiary)]">add_circle</span>
                     <div className="min-w-0">
@@ -291,7 +291,7 @@ export function DirectoryPicker({ value, onChange, onCreateProject }: Props) {
                 )}
                 <button
                   onClick={handleChooseFolder}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[var(--color-surface-hover)] transition-colors"
+                  className="menu-item w-full flex items-center gap-3 px-4 py-3 text-left"
                 >
                   <span className="material-symbols-outlined text-[20px] text-[var(--color-text-tertiary)]">create_new_folder</span>
                   <span className="text-sm text-[var(--color-text-secondary)]">{t('dirPicker.chooseFolder')}</span>
@@ -323,7 +323,7 @@ export function DirectoryPicker({ value, onChange, onCreateProject }: Props) {
                 ) : (
                   <>
                     {browseParent && browseParent !== browsePath && (
-                      <button onClick={() => loadBrowseDir(browseParent)} className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-[var(--color-surface-hover)]">
+                      <button onClick={() => loadBrowseDir(browseParent)} className="menu-item w-full flex items-center gap-2 px-3 py-2 text-left">
                         <span className="material-symbols-outlined text-[16px] text-[var(--color-text-tertiary)]">arrow_upward</span>
                         <span className="text-xs text-[var(--color-text-secondary)]">..</span>
                       </button>
@@ -333,7 +333,7 @@ export function DirectoryPicker({ value, onChange, onCreateProject }: Props) {
                     ) : browseEntries.map((entry) => (
                       <button
                         key={entry.path}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-[var(--color-surface-hover)]"
+                        className="menu-item w-full flex items-center gap-2 px-3 py-2 text-left"
                       >
                         <span className="material-symbols-outlined text-[16px] text-[var(--color-text-tertiary)]" onClick={() => loadBrowseDir(entry.path)}>folder</span>
                         <span className="text-xs text-[var(--color-text-primary)] flex-1" onClick={() => loadBrowseDir(entry.path)}>{entry.name}</span>

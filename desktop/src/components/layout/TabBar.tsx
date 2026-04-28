@@ -233,11 +233,11 @@ export function TabBar() {
   return (
     <div
       data-testid="tab-bar"
-      className="flex min-h-[44px] items-end border-b border-[var(--color-border)] bg-[color-mix(in_srgb,var(--color-canvas)_88%,var(--color-surface)_12%)] px-1 pt-1 select-none"
+      className="tab-bar-surface flex min-h-[44px] items-end border-b border-[var(--color-border)] px-1 pt-1 select-none"
     >
 
       {canScrollLeft && (
-        <button onClick={() => scroll('left')} className="flex h-10 w-7 flex-shrink-0 items-center justify-center rounded-[var(--radius-md)] text-[var(--color-text-tertiary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)]">
+        <button onClick={() => scroll('left')} className="icon-button flex h-10 w-7 flex-shrink-0 items-center justify-center rounded-[var(--radius-md)] text-[var(--color-text-tertiary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)]">
           <span className="material-symbols-outlined text-[16px]">chevron_left</span>
         </button>
       )}
@@ -275,7 +275,7 @@ export function TabBar() {
       )}
 
       {canScrollRight && (
-        <button onClick={() => scroll('right')} className="flex h-10 w-7 flex-shrink-0 items-center justify-center rounded-[var(--radius-md)] text-[var(--color-text-tertiary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)]">
+        <button onClick={() => scroll('right')} className="icon-button flex h-10 w-7 flex-shrink-0 items-center justify-center rounded-[var(--radius-md)] text-[var(--color-text-tertiary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)]">
           <span className="material-symbols-outlined text-[16px]">chevron_right</span>
         </button>
       )}
@@ -284,37 +284,37 @@ export function TabBar() {
 
       {contextMenu && (
         <div
-          className="fixed z-50 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-md)] py-1 min-w-[160px]"
-          style={{ left: contextMenu.x, top: contextMenu.y, boxShadow: 'var(--shadow-dropdown)' }}
+          className="floating-menu fixed z-50 min-w-[160px] rounded-[var(--radius-md)] py-1"
+          style={{ left: contextMenu.x, top: contextMenu.y }}
         >
           <button
             onClick={() => { handleClose(contextMenu.sessionId); setContextMenu(null) }}
-            className="w-full px-3 py-1.5 text-xs text-left text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)]"
+            className="menu-item w-full px-3 py-1.5 text-left text-xs text-[var(--color-text-primary)]"
           >
             {t('tabs.close')}
           </button>
           <button
             onClick={() => handleCloseOthers(contextMenu.sessionId)}
-            className="w-full px-3 py-1.5 text-xs text-left text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)]"
+            className="menu-item w-full px-3 py-1.5 text-left text-xs text-[var(--color-text-primary)]"
           >
             {t('tabs.closeOthers')}
           </button>
           <button
             onClick={() => handleCloseLeft(contextMenu.sessionId)}
-            className="w-full px-3 py-1.5 text-xs text-left text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)]"
+            className="menu-item w-full px-3 py-1.5 text-left text-xs text-[var(--color-text-primary)]"
           >
             {t('tabs.closeLeft')}
           </button>
           <button
             onClick={() => handleCloseRight(contextMenu.sessionId)}
-            className="w-full px-3 py-1.5 text-xs text-left text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)]"
+            className="menu-item w-full px-3 py-1.5 text-left text-xs text-[var(--color-text-primary)]"
           >
             {t('tabs.closeRight')}
           </button>
           <div className="my-1 border-t border-[var(--color-border)]" />
           <button
             onClick={handleCloseAll}
-            className="w-full px-3 py-1.5 text-xs text-left text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)]"
+            className="menu-item w-full px-3 py-1.5 text-left text-xs text-[var(--color-text-primary)]"
           >
             {t('tabs.closeAll')}
           </button>
@@ -379,7 +379,7 @@ const TabItem = forwardRef<HTMLDivElement, {
         transition-[background-color,box-shadow,opacity,transform] duration-150 ease-out
         ${isActive
           ? 'rounded-t-[14px] border border-[var(--color-border)] border-b-[var(--color-surface)] bg-[var(--color-surface)] shadow-[0_-6px_20px_rgba(15,23,42,0.05)]'
-          : 'rounded-[12px] bg-transparent hover:bg-[var(--color-surface-hover)]'
+          : 'rounded-[12px] bg-transparent hover:bg-[var(--color-surface-hover)] hover:translate-y-[-1px]'
         }
         ${isDragging ? 'opacity-95 shadow-[0_10px_24px_rgba(0,0,0,0.18)] ring-1 ring-[var(--color-border)]' : ''}
         ${isDragOver ? 'before:absolute before:left-0 before:top-[4px] before:bottom-[4px] before:w-[3px] before:bg-[var(--color-brand)] before:rounded-full before:shadow-[0_0_0_1px_rgba(255,255,255,0.25)]' : ''}

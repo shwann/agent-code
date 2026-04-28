@@ -8,9 +8,9 @@ type Props = {
 export function TaskEmptyState({ onCreateTask }: Props) {
   const t = useTranslation()
   return (
-    <div className="flex flex-col items-center justify-center py-20">
+    <div className="premium-card flex flex-col items-center justify-center rounded-[18px] py-20">
       {/* Clock icon */}
-      <div className="w-16 h-16 rounded-full bg-[var(--color-surface-info)] flex items-center justify-center mb-4">
+      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--color-primary-fixed)] ring-1 ring-[var(--color-brand)]/15">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-tertiary)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="12" cy="12" r="10" />
           <polyline points="12 6 12 12 16 14" />

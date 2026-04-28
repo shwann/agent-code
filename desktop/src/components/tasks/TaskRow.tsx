@@ -67,12 +67,12 @@ export function TaskRow({ task, showLogs, onToggleLogs }: Props) {
     deleteTask(task.id)
   }
 
-  const iconBtn = 'p-1.5 rounded-[var(--radius-sm)] transition-colors'
-  const menuItem = 'flex items-center gap-2.5 w-full px-3 py-2 text-xs text-left rounded-[var(--radius-sm)] transition-colors'
+  const iconBtn = 'icon-button p-1.5 rounded-[var(--radius-sm)]'
+  const menuItem = 'menu-item flex items-center gap-2.5 w-full px-3 py-2 text-xs text-left rounded-[var(--radius-sm)]'
 
   return (
-    <div className="border-b border-[var(--color-border-separator)]">
-      <div className="flex items-center justify-between px-4 py-3 hover:bg-[var(--color-surface-hover)] transition-colors group">
+    <div className="premium-card overflow-hidden rounded-[var(--radius-lg)]">
+      <div className="group flex items-center justify-between px-4 py-3 transition-colors hover:bg-[var(--color-surface-hover)]">
         {/* Left: status + info */}
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <span className={`w-2 h-2 rounded-full flex-shrink-0 ${task.enabled ? 'bg-[var(--color-success)]' : 'bg-[var(--color-text-tertiary)]'}`} />
@@ -139,11 +139,11 @@ export function TaskRow({ task, showLogs, onToggleLogs }: Props) {
               </button>
 
               {showMenu && !confirmAction && (
-                <div className="absolute right-0 top-full mt-1 z-50 w-44 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-lg py-1">
+                <div className="floating-menu absolute right-0 top-full z-50 mt-1 w-44 rounded-[var(--radius-md)] py-1">
                   {/* Edit */}
                   <button
                     onClick={() => { setShowMenu(false); setShowEdit(true) }}
-                    className={`${menuItem} text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)]`}
+                    className={`${menuItem} text-[var(--color-text-primary)]`}
                   >
                     <span className="material-symbols-outlined text-[16px] text-[var(--color-text-secondary)]">edit</span>
                     {t('tasks.edit')}
@@ -152,7 +152,7 @@ export function TaskRow({ task, showLogs, onToggleLogs }: Props) {
                   {/* Toggle */}
                   <button
                     onClick={() => setConfirmAction('toggle')}
-                    className={`${menuItem} text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)]`}
+                    className={`${menuItem} text-[var(--color-text-primary)]`}
                   >
                     <span className="material-symbols-outlined text-[16px] text-[var(--color-text-secondary)]">
                       {task.enabled ? 'pause_circle' : 'play_circle'}
@@ -204,7 +204,7 @@ export function TaskRow({ task, showLogs, onToggleLogs }: Props) {
 
       {/* Runs panel */}
       {showLogs && (
-        <div className="px-4 pb-3">
+        <div className="border-t border-[var(--color-border)]/60 px-4 pb-3 pt-3">
           <TaskRunsPanel taskId={task.id} onClose={onToggleLogs} refreshKey={logsRefreshKey} />
         </div>
       )}
@@ -228,7 +228,7 @@ function ConfirmPopover({ message, confirmLabel, onConfirm, onCancel, cancelLabe
   variant?: 'brand' | 'error'
 }) {
   return (
-    <div className="absolute right-0 top-full mt-1.5 z-50 w-52 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-lg p-3">
+    <div className="floating-menu absolute right-0 top-full z-50 mt-1.5 w-52 rounded-[var(--radius-md)] p-3">
       <p className="text-xs text-[var(--color-text-secondary)] mb-2.5">{message}</p>
       <div className="flex justify-end gap-1.5">
         <button

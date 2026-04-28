@@ -19,12 +19,12 @@ export function Textarea({ label, error, required, className = '', id, ...props 
       <textarea
         id={inputId}
         className={`
-          min-h-[120px] px-3 py-2 rounded-[var(--radius-lg)] border text-sm resize-y
-          bg-[var(--color-surface)] text-[var(--color-text-primary)]
+          control-field min-h-[120px] px-3 py-2 rounded-[var(--radius-lg)] border text-sm resize-y
+          text-[var(--color-text-primary)]
           placeholder:text-[var(--color-text-tertiary)]
-          transition-colors duration-150
+          transition-[background-color,border-color,box-shadow] duration-150
           ${error
-            ? 'border-[var(--color-error)]'
+            ? 'border-[var(--color-error)] focus:shadow-[var(--shadow-error-ring)]'
             : 'border-[var(--color-border)] focus:border-[var(--color-border-focus)] focus:shadow-[var(--shadow-focus-ring)]'
           }
           outline-none

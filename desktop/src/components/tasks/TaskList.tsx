@@ -22,7 +22,7 @@ export function TaskList({ tasks }: Props) {
       </div>
 
       {/* Task rows — accordion: only one logs panel open at a time */}
-      <div className="flex flex-col">
+      <div className="flex flex-col gap-2">
         {tasks.map((task) => (
           <TaskRow
             key={task.id}
@@ -38,8 +38,8 @@ export function TaskList({ tasks }: Props) {
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="px-4 py-3 rounded-[var(--radius-lg)] bg-[var(--color-surface-info)]">
-      <div className="text-2xl font-bold text-[var(--color-text-primary)]">{value}</div>
+    <div className="premium-card rounded-[var(--radius-lg)] px-4 py-3">
+      <div className="text-2xl font-semibold text-[var(--color-text-primary)]" style={{ fontFamily: 'var(--font-headline)' }}>{value}</div>
       <div className="text-xs text-[var(--color-text-secondary)]">{label}</div>
     </div>
   )

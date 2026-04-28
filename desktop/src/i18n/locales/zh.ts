@@ -50,6 +50,7 @@ export const zh: Record<TranslationKey, string> = {
 
   // ─── Settings ──────────────────────────────────────
   'settings.title': '设置',
+  'settings.general.description': '调整外观、语言、模型思考强度和运行时默认行为。',
   'settings.tab.providers': '服务商',
   'settings.tab.permissions': '权限',
   'settings.tab.general': '通用',
@@ -423,6 +424,7 @@ export const zh: Record<TranslationKey, string> = {
   'settings.about.socialMedia': '社交媒体',
   'settings.about.updates': '应用更新',
   'settings.about.updatesDesc': '检查 GitHub Releases，下载安装包，并在安装后自动重启。',
+  'settings.about.description': '查看当前桌面端版本、更新说明和项目链接。',
 
   // Settings > Computer Use
   'settings.tab.computerUse': 'Computer Use',
@@ -486,6 +488,15 @@ export const zh: Record<TranslationKey, string> = {
   // ─── Empty Session ──────────────────────────────────────
   'empty.title': '新建会话',
   'empty.subtitle': '开始一个新的编码会话。AgentCode 已准备好帮你构建、调试和架构你的项目。',
+  'empty.workbenchEyebrow': '工作区已就绪',
+  'empty.workbenchTitle': 'AgentCode 接下来处理什么？',
+  'empty.workbenchSubtitle': '选择项目、继续最近的工作，或者直接描述下一步要改的内容。',
+  'empty.continueTitle': '继续上次的工作',
+  'empty.noRecentSessions': '开始工作后，最近会话会出现在这里。',
+  'empty.openSession': '打开会话',
+  'empty.workspaceLabel': '工作目录',
+  'empty.noWorkspace': '未选择工作目录',
+  'empty.messageCount': '{count} 条消息',
   'empty.placeholder': '随便问点什么...',
   'empty.addFiles': '添加文件或图片',
   'empty.slashCommands': '斜杠命令',

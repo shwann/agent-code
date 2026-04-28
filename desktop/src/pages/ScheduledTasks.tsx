@@ -18,12 +18,12 @@ export function ScheduledTasks() {
   }, [fetchTasks])
 
   return (
-    <div className="flex-1 overflow-y-auto">
-      <div className="px-10 py-8">
+    <div className="page-shell flex-1 overflow-y-auto">
+      <div className="page-content px-10 py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-5 flex items-center justify-between gap-6">
           <div>
-            <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">{t('scheduledPage.title')}</h1>
+            <h1 className="text-2xl font-semibold text-[var(--color-text-primary)]" style={{ fontFamily: 'var(--font-headline)' }}>{t('scheduledPage.title')}</h1>
             <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
               {(() => {
                 const parts = t('scheduledPage.subtitle').split('{code}')
@@ -35,7 +35,7 @@ export function ScheduledTasks() {
         </div>
 
         {/* Desktop-online notice */}
-        <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-[var(--radius-md)] bg-[var(--color-warning)]/8 border border-[var(--color-warning)]/15 mb-6">
+        <div className="soft-notice mb-6 flex items-center gap-2.5 rounded-[var(--radius-lg)] px-3.5 py-2.5">
           <span className="material-symbols-outlined text-[18px] text-[var(--color-warning)]">schedule</span>
           <span className="text-xs text-[var(--color-text-secondary)]">
             {t('scheduledPage.desktopNotice')}

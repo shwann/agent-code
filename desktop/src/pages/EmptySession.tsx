@@ -58,6 +58,8 @@ export function EmptySession() {
   const slashMenuRef = useRef<HTMLDivElement>(null)
   const fileSearchRef = useRef<FileSearchMenuHandle>(null)
   const slashItemRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const sessions = useSessionStore((state) => state.sessions)
+  const fetchSessions = useSessionStore((state) => state.fetchSessions)
   const createSession = useSessionStore((state) => state.createSession)
   const sendMessage = useChatStore((state) => state.sendMessage)
   const setSessionRuntime = useChatStore((state) => state.setSessionRuntime)
@@ -68,6 +70,10 @@ export function EmptySession() {
   useEffect(() => {
     textareaRef.current?.focus()
   }, [])
+
+  useEffect(() => {
+    void fetchSessions()
+  }, [fetchSessions])
 
   useEffect(() => {
     if (!plusMenuOpen) return
@@ -164,6 +170,13 @@ export function EmptySession() {
       command.description.toLowerCase().includes(lower)
     ))
   }, [slashCommands, slashFilter])
+
+  const recentSessions = useMemo(
+    () => [...sessions]
+      .sort((a, b) => new Date(b.modifiedAt).getTime() - new Date(a.modifiedAt).getTime())
+      .slice(0, 4),
+    [sessions],
+  )
 
   const exactSlashCommand = useMemo(() => {
     const normalized = slashFilter.trim().toLowerCase()
@@ -455,22 +468,81 @@ export function EmptySession() {
     })
   }
 
+  const openExistingSession = (sessionId: string, title: string) => {
+    useTabStore.getState().openTab(sessionId, title || t('session.untitled'))
+    connectToSession(sessionId)
+  }
+
   return (
     <div className="empty-stage relative flex flex-1 flex-col overflow-hidden">
-      <div className="flex flex-1 flex-col items-center justify-center p-8 pb-40">
-        <div className="flex max-w-[620px] flex-col items-center text-center">
-          <img src="/app-icon.png" alt="AgentCode" className="empty-hero-mark mb-7 h-20 w-20 rounded-3xl ring-1 ring-[var(--color-brand)]/20" />
-          <h1 className="mb-3 max-w-[560px] text-[34px] font-semibold leading-tight tracking-normal text-[var(--color-text-primary)]" style={{ fontFamily: 'var(--font-headline)' }}>
-            {t('empty.title')}
-          </h1>
-          <p className="mx-auto max-w-lg text-sm leading-6 text-[var(--color-text-secondary)]" style={{ fontFamily: 'var(--font-body)' }}>
-            {t('empty.subtitle')}
-          </p>
-        </div>
-      </div>
+      <div className="relative flex min-h-0 flex-1 flex-col px-6 py-8 sm:px-8">
+        <div className="mx-auto grid w-full max-w-[1120px] flex-1 grid-cols-1 content-center gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+          <div className="min-w-0">
+            <div className="mb-5 flex items-center gap-3">
+              <img src="/app-icon.png" alt="AgentCode" className="empty-hero-mark h-14 w-14 rounded-2xl ring-1 ring-[var(--color-brand)]/20" />
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-brand)]">
+                  {t('empty.workbenchEyebrow')}
+                </div>
+                <h1 className="mt-1 text-[30px] font-semibold leading-tight tracking-normal text-[var(--color-text-primary)]" style={{ fontFamily: 'var(--font-headline)' }}>
+                  {t('empty.workbenchTitle')}
+                </h1>
+              </div>
+            </div>
+            <p className="mb-6 max-w-2xl text-sm leading-6 text-[var(--color-text-secondary)]">
+              {t('empty.workbenchSubtitle')}
+            </p>
+          </div>
 
-      <div className="absolute bottom-5 left-0 right-0 flex justify-center px-6 sm:px-8">
-        <div className="flex w-full max-w-[820px] flex-col gap-2">
+          <div className="premium-card hidden min-h-[270px] flex-col rounded-[18px] p-3 lg:flex">
+            <div className="mb-2 flex items-center justify-between px-1">
+              <h2 className="text-sm font-semibold text-[var(--color-text-primary)]">
+                {t('empty.continueTitle')}
+              </h2>
+              <span className="material-symbols-outlined text-[16px] text-[var(--color-text-tertiary)]">history</span>
+            </div>
+            {recentSessions.length === 0 ? (
+              <div className="flex flex-1 items-center justify-center rounded-[var(--radius-lg)] border border-dashed border-[var(--color-border)] px-5 text-center text-xs leading-5 text-[var(--color-text-tertiary)]">
+                {t('empty.noRecentSessions')}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-1">
+                {recentSessions.map((session) => (
+                  <button
+                    key={session.id}
+                    type="button"
+                    onClick={() => openExistingSession(session.id, session.title)}
+                    className="interactive-surface group w-full rounded-[var(--radius-lg)] px-3 py-2.5 text-left hover:bg-[var(--color-surface-hover)]"
+                    title={t('empty.openSession')}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className={`h-1.5 w-1.5 rounded-full ${session.workDirExists ? 'bg-[var(--color-brand)]' : 'bg-[var(--color-warning)]'}`} />
+                      <span className="min-w-0 flex-1 truncate text-sm font-medium text-[var(--color-text-primary)]">
+                        {session.title || t('session.untitled')}
+                      </span>
+                      <span className="text-[10px] text-[var(--color-text-tertiary)]">
+                        {formatSessionTime(session.modifiedAt)}
+                      </span>
+                    </div>
+                    <div className="mt-1 flex items-center gap-2 pl-3.5 text-[11px] text-[var(--color-text-tertiary)]">
+                      <span className="truncate">
+                        {session.workDir?.split('/').pop() || t('empty.noWorkspace')}
+                      </span>
+                      {session.messageCount > 0 && (
+                        <>
+                          <span>·</span>
+                          <span>{t('empty.messageCount', { count: session.messageCount })}</span>
+                        </>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="lg:col-span-2">
+            <div className="flex w-full flex-col gap-2">
           <div
             className="composer-panel glass-panel relative flex flex-col gap-3 rounded-[20px] p-4"
             onDragOver={(event) => event.preventDefault()}
@@ -511,7 +583,7 @@ export function EmptySession() {
             {slashMenuOpen && filteredCommands.length > 0 && (
               <div
                 ref={slashMenuRef}
-                className="absolute bottom-full left-0 right-0 z-50 mb-2 overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] shadow-[var(--shadow-dropdown)]"
+                className="floating-menu absolute bottom-full left-0 right-0 z-50 mb-2 overflow-hidden rounded-xl"
               >
                 <div className="max-h-[260px] overflow-y-auto py-1">
                   {filteredCommands.map((command, index) => (
@@ -520,8 +592,8 @@ export function EmptySession() {
                       ref={(el) => { slashItemRefs.current[index] = el }}
                       onClick={() => selectSlashCommand(command.name)}
                       onMouseEnter={() => setSlashSelectedIndex(index)}
-                      className={`flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors ${
-                        index === slashSelectedIndex ? 'bg-[var(--color-surface-hover)]' : 'hover:bg-[var(--color-surface-hover)]'
+                      className={`menu-item flex w-full items-center gap-3 px-4 py-2.5 text-left ${
+                        index === slashSelectedIndex ? 'bg-[var(--color-surface-hover)]' : ''
                       }`}
                     >
                       <span className="shrink-0 text-sm font-semibold text-[var(--color-text-primary)]">/{command.name}</span>
@@ -556,26 +628,26 @@ export function EmptySession() {
                   <button
                     onClick={() => setPlusMenuOpen((prev) => !prev)}
                     aria-label="Open composer tools"
-                    className="rounded-lg p-1.5 text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface-hover)]"
+                    className="icon-button rounded-lg p-1.5 text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)]"
                   >
                     <span className="material-symbols-outlined text-[18px]">add</span>
                   </button>
 
                   {plusMenuOpen && (
-                    <div className="absolute bottom-full left-0 mb-2 w-[240px] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] py-1 shadow-[var(--shadow-dropdown)]">
+                    <div className="floating-menu absolute bottom-full left-0 mb-2 w-[240px] rounded-xl py-1">
                       <button
                         onClick={() => {
                           fileInputRef.current?.click()
                           setPlusMenuOpen(false)
                         }}
-                        className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface-hover)]"
+                        className="menu-item flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-[var(--color-text-primary)]"
                       >
                         <span className="material-symbols-outlined text-[18px] text-[var(--color-text-secondary)]">attach_file</span>
                         {t('empty.addFiles')}
                       </button>
                       <button
                         onClick={insertSlashCommand}
-                        className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface-hover)]"
+                        className="menu-item flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-[var(--color-text-primary)]"
                       >
                         <span className="w-5 text-center text-[18px] font-bold text-[var(--color-text-secondary)]">/</span>
                         {t('empty.slashCommands')}
@@ -592,7 +664,7 @@ export function EmptySession() {
                 <button
                   onClick={handleSubmit}
                   disabled={(!input.trim() && attachments.length === 0) || isSubmitting}
-                  className="flex w-[112px] items-center justify-center gap-1 rounded-lg bg-[image:var(--gradient-btn-primary)] px-3 py-1.5 text-xs font-semibold text-[var(--color-btn-primary-fg)] shadow-[var(--shadow-button-primary)] transition-all hover:brightness-105 disabled:opacity-30"
+                  className="interactive-surface flex w-[112px] items-center justify-center gap-1 rounded-lg bg-[image:var(--gradient-btn-primary)] px-3 py-1.5 text-xs font-semibold text-[var(--color-btn-primary-fg)] shadow-[var(--shadow-button-primary)] hover:brightness-105 disabled:opacity-30 disabled:hover:transform-none"
                 >
                   {t('common.run')}
                   <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
@@ -611,12 +683,14 @@ export function EmptySession() {
               <button
                 type="button"
                 onClick={() => setIsProjectModalOpen(true)}
-                className="flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)]"
+                className="interactive-surface flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)]"
               >
                 <span className="material-symbols-outlined text-[15px]">create_new_folder</span>
                 {t('empty.createProject')}
               </button>
             </div>
+          </div>
+        </div>
           </div>
         </div>
       </div>
@@ -640,4 +714,16 @@ export function EmptySession() {
       />
     </div>
   )
+}
+
+function formatSessionTime(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const min = Math.floor(diff / 60000)
+  if (min < 1) return 'now'
+  if (min < 60) return `${min}m`
+  const hr = Math.floor(min / 60)
+  if (hr < 24) return `${hr}h`
+  const day = Math.floor(hr / 24)
+  if (day < 30) return `${day}d`
+  return `${Math.floor(day / 30)}mo`
 }

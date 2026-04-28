@@ -13,17 +13,17 @@ const variantStyles: Record<ButtonVariant, string> = {
   primary:
     'bg-[image:var(--gradient-btn-primary)] text-[var(--color-btn-primary-fg)] shadow-[var(--shadow-button-primary)] hover:bg-[image:var(--gradient-btn-primary-hover)] hover:brightness-105 active:translate-y-[1px]',
   secondary:
-    'bg-[var(--color-surface)] text-[var(--color-text-primary)] border border-[var(--color-border)] hover:bg-[var(--color-surface-hover)]',
+    'premium-card text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)]',
   danger:
-    'bg-[var(--color-error)] text-white hover:opacity-90',
+    'bg-[var(--color-error)] text-white shadow-[0_8px_18px_rgba(186,26,26,0.16)] hover:opacity-90',
   ghost:
     'bg-transparent text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)]',
 }
 
 const sizeStyles = {
-  sm: 'px-2 py-1 text-xs',
-  md: 'px-4 py-2 text-sm',
-  lg: 'px-5 py-2.5 text-sm',
+  sm: 'min-h-7 px-2.5 py-1 text-xs',
+  md: 'min-h-9 px-4 py-2 text-sm',
+  lg: 'min-h-10 px-5 py-2.5 text-sm',
 }
 
 export function Button({
@@ -40,9 +40,11 @@ export function Button({
     <button
       disabled={disabled || loading}
       className={`
-        inline-flex items-center justify-center gap-1.5 rounded-[var(--radius-md)]
-        font-medium transition-colors duration-150 cursor-pointer
+        interactive-surface inline-flex items-center justify-center gap-1.5 rounded-[var(--radius-md)]
+        font-medium cursor-pointer outline-none
+        focus-visible:ring-2 focus-visible:ring-[var(--color-border-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-canvas)]
         disabled:opacity-50 disabled:cursor-not-allowed
+        disabled:hover:transform-none disabled:hover:shadow-none
         ${variantStyles[variant]} ${sizeStyles[size]} ${className}
       `}
       {...props}

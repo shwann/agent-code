@@ -54,9 +54,7 @@ export function Dropdown<T extends string>({
       {open && (
         <div
           className={`
-            absolute z-50 mt-1 py-1 rounded-[var(--radius-lg)]
-            bg-[var(--color-surface)] border border-[var(--color-border)]
-            shadow-[var(--shadow-dropdown)]
+            floating-menu absolute z-50 mt-1 py-1 rounded-[var(--radius-lg)]
             animate-in fade-in slide-in-from-top-1
             ${align === 'right' ? 'right-0' : 'left-0'}
           `}
@@ -67,8 +65,7 @@ export function Dropdown<T extends string>({
               key={item.value}
               onClick={() => { onChange(item.value); setOpen(false) }}
               className={`
-                w-full flex items-center gap-3 px-4 py-3 text-left transition-colors
-                hover:bg-[var(--color-surface-hover)]
+                menu-item w-full flex items-center gap-3 px-4 py-3 text-left
                 ${i > 0 ? 'border-t border-[var(--color-border-separator)]' : ''}
               `}
             >

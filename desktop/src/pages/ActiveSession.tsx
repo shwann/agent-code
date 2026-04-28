@@ -10,6 +10,7 @@ import { ChatInput } from '../components/chat/ChatInput'
 import { ComputerUsePermissionModal } from '../components/chat/ComputerUsePermissionModal'
 import { TeamStatusBar } from '../components/teams/TeamStatusBar'
 import { SessionTaskBar } from '../components/chat/SessionTaskBar'
+import type { SessionListItem } from '../types/session'
 
 const TASK_POLL_INTERVAL_MS = 1000
 
@@ -83,7 +84,7 @@ export function ActiveSession() {
   return (
     <div className="app-canvas flex-1 flex flex-col relative overflow-hidden text-[var(--color-text-primary)]">
       {isMemberSession && (
-        <div className="shrink-0 border-b border-[var(--color-border)] bg-[var(--color-surface-container)]">
+        <div className="page-header shrink-0">
           <div className="mx-auto max-w-[860px] flex items-center justify-between gap-4 px-8 py-2">
             <div className="min-w-0">
               <div className="flex items-center gap-3">
@@ -118,13 +119,23 @@ export function ActiveSession() {
                 }
               }}
               disabled={!activeTeam?.leadSessionId}
-              className="flex shrink-0 items-center gap-1 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors disabled:opacity-50 disabled:hover:text-[var(--color-text-secondary)]"
+              className="icon-button flex shrink-0 items-center gap-1 rounded-[var(--radius-md)] px-2 py-1 text-xs font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)] disabled:opacity-50 disabled:hover:text-[var(--color-text-secondary)]"
             >
               <span className="material-symbols-outlined text-[14px]">arrow_back</span>
               {t('teams.backToLeader')}
             </button>
           </div>
         </div>
+      )}
+
+      {!isMemberSession && (
+        <SessionHeader
+          session={session}
+          isActive={isActive}
+          totalTokens={totalTokens}
+          lastUpdated={lastUpdated}
+          t={t}
+        />
       )}
 
       {isEmpty ? (
@@ -154,50 +165,6 @@ export function ActiveSession() {
         </div>
       ) : (
         <>
-          {!isMemberSession && (
-            <div className="mx-auto flex w-full max-w-[900px] items-center border-b border-[var(--color-border-separator)] px-8 py-3">
-              <div className="flex-1">
-                <h1 className="text-base font-semibold font-headline text-[var(--color-text-primary)] leading-tight">
-                  {session?.title || t('session.untitled')}
-                </h1>
-                <div className="flex items-center gap-2 text-[10px] text-outline font-medium mt-1">
-                  {isActive && (
-                    <span className="flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-success)] animate-pulse-dot" />
-                      {t('session.active')}
-                    </span>
-                  )}
-                  {totalTokens > 0 && (
-                    <>
-                      <span className="text-[var(--color-outline)]">·</span>
-                      <span>{totalTokens.toLocaleString()} t</span>
-                    </>
-                  )}
-                  {lastUpdated && (
-                    <>
-                      <span className="text-[var(--color-outline)]">·</span>
-                      <span>{t('session.lastUpdated', { time: lastUpdated })}</span>
-                    </>
-                  )}
-                  {session?.messageCount !== undefined && session.messageCount > 0 && (
-                    <>
-                      <span className="text-[var(--color-outline)]">·</span>
-                      <span>{t('session.messages', { count: session.messageCount })}</span>
-                    </>
-                  )}
-                </div>
-                {session?.workDirExists === false && (
-                  <div className="mt-2 inline-flex max-w-full items-center gap-2 rounded-lg border border-[var(--color-error)]/20 bg-[var(--color-error)]/8 px-3 py-1.5 text-[11px] text-[var(--color-error)]">
-                    <span className="material-symbols-outlined text-[14px]">warning</span>
-                    <span className="truncate">
-                      {t('session.workspaceUnavailable', { dir: session.workDir || 'directory no longer exists' })}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
           <MessageList />
         </>
       )}
@@ -214,6 +181,65 @@ export function ActiveSession() {
           request={pendingComputerUsePermission?.request ?? null}
         />
       ) : null}
+    </div>
+  )
+}
+
+function SessionHeader({
+  session,
+  isActive,
+  totalTokens,
+  lastUpdated,
+  t,
+}: {
+  session: SessionListItem | undefined
+  isActive: boolean
+  totalTokens: number
+  lastUpdated: string
+  t: ReturnType<typeof useTranslation>
+}) {
+  const workDirLabel = session?.workDir
+    ? session.workDir.split('/').filter(Boolean).slice(-2).join('/')
+    : null
+
+  return (
+    <div className="page-header shrink-0">
+      <div className="mx-auto flex w-full max-w-[900px] items-center gap-4 px-8 py-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex min-w-0 items-center gap-2">
+            <h1 className="truncate text-base font-semibold leading-tight text-[var(--color-text-primary)]" style={{ fontFamily: 'var(--font-headline)' }}>
+              {session?.title || t('session.untitled')}
+            </h1>
+            {isActive && (
+              <span className="inline-flex h-5 shrink-0 items-center gap-1 rounded-full border border-[var(--color-success)]/20 bg-[var(--color-success)]/10 px-2 text-[10px] font-semibold text-[var(--color-success)]">
+                <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-success)] animate-pulse-dot" />
+                {t('session.active')}
+              </span>
+            )}
+          </div>
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-[10px] font-medium text-[var(--color-text-tertiary)]">
+            {workDirLabel && (
+              <span className="inline-flex max-w-[260px] items-center gap-1 truncate rounded-full border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-2 py-0.5">
+                <span className="material-symbols-outlined text-[12px]">folder_open</span>
+                <span className="truncate">{workDirLabel}</span>
+              </span>
+            )}
+            {totalTokens > 0 && <span>{totalTokens.toLocaleString()} t</span>}
+            {lastUpdated && <span>{t('session.lastUpdated', { time: lastUpdated })}</span>}
+            {session?.messageCount !== undefined && session.messageCount > 0 && (
+              <span>{t('session.messages', { count: session.messageCount })}</span>
+            )}
+          </div>
+          {session?.workDirExists === false && (
+            <div className="mt-2 inline-flex max-w-full items-center gap-2 rounded-lg border border-[var(--color-error)]/20 bg-[var(--color-error)]/8 px-3 py-1.5 text-[11px] text-[var(--color-error)]">
+              <span className="material-symbols-outlined text-[14px]">warning</span>
+              <span className="truncate">
+                {t('session.workspaceUnavailable', { dir: session.workDir || 'directory no longer exists' })}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

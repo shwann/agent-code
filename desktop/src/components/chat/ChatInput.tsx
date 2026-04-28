@@ -504,7 +504,7 @@ export function ChatInput({ variant = 'default' }: ChatInputProps) {
   const slashCommandsLabel = isHeroComposer ? t('empty.slashCommands') : t('chat.slashCommands')
 
   return (
-    <div className={isHeroComposer ? 'bg-transparent px-6 pb-6 sm:px-8' : 'bg-[var(--color-canvas)] px-4 py-4'}>
+    <div className={isHeroComposer ? 'bg-transparent px-6 pb-6 sm:px-8' : 'bg-transparent px-4 py-4'}>
       <div className={isHeroComposer ? 'mx-auto flex w-full max-w-[820px] flex-col gap-2' : 'mx-auto max-w-[900px]'}>
         <div
           className={isHeroComposer
@@ -549,7 +549,7 @@ export function ChatInput({ variant = 'default' }: ChatInputProps) {
           {!isMemberSession && slashMenuOpen && filteredCommands.length > 0 && (
             <div
               ref={slashMenuRef}
-              className="absolute bottom-full left-0 right-0 z-50 mb-2 overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] shadow-[var(--shadow-dropdown)]"
+              className="floating-menu absolute bottom-full left-0 right-0 z-50 mb-2 overflow-hidden rounded-xl"
             >
               <div className="max-h-[300px] overflow-y-auto py-1">
                 {filteredCommands.map((command, index) => (
@@ -558,10 +558,10 @@ export function ChatInput({ variant = 'default' }: ChatInputProps) {
                     ref={(el) => { slashItemRefs.current[index] = el }}
                     onClick={() => selectSlashCommand(command.name)}
                     onMouseEnter={() => setSlashSelectedIndex(index)}
-                    className={`flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors ${
+                    className={`menu-item flex w-full items-center gap-3 px-4 py-2.5 text-left ${
                       index === slashSelectedIndex
                         ? 'bg-[var(--color-surface-hover)]'
-                        : 'hover:bg-[var(--color-surface-hover)]'
+                        : ''
                     }`}
                   >
                     <span className="shrink-0 text-sm font-semibold text-[var(--color-text-primary)]">
@@ -636,26 +636,26 @@ export function ChatInput({ variant = 'default' }: ChatInputProps) {
                     <button
                       onClick={() => setPlusMenuOpen((value) => !value)}
                       aria-label="Open composer tools"
-                      className="rounded-[var(--radius-md)] p-1.5 text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface-hover)]"
+                      className="icon-button rounded-[var(--radius-md)] p-1.5 text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)]"
                     >
                       <span className="material-symbols-outlined text-[18px]">add</span>
                     </button>
 
                     {plusMenuOpen && (
-                      <div className="absolute bottom-full left-0 z-50 mb-2 w-[240px] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] py-1 shadow-[var(--shadow-dropdown)]">
+                      <div className="floating-menu absolute bottom-full left-0 z-50 mb-2 w-[240px] rounded-xl py-1">
                         <button
                           onClick={() => {
                             fileInputRef.current?.click()
                             setPlusMenuOpen(false)
                           }}
-                          className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-[var(--color-surface-hover)]"
+                          className="menu-item flex w-full items-center gap-3 px-4 py-2.5 text-left"
                         >
                           <span className="material-symbols-outlined text-[18px] text-[var(--color-text-secondary)]">attach_file</span>
                           <span className="text-sm text-[var(--color-text-primary)]">{addFilesLabel}</span>
                         </button>
                         <button
                           onClick={insertSlashCommand}
-                          className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-[var(--color-surface-hover)]"
+                          className="menu-item flex w-full items-center gap-3 px-4 py-2.5 text-left"
                         >
                           <span className="w-[24px] text-center text-[18px] font-bold text-[var(--color-text-secondary)]">/</span>
                           <span className="text-sm text-[var(--color-text-primary)]">{slashCommandsLabel}</span>
@@ -677,7 +677,7 @@ export function ChatInput({ variant = 'default' }: ChatInputProps) {
                 onClick={!isMemberSession && isActive ? () => stopGeneration(activeTabId!) : handleSubmit}
                 disabled={!isMemberSession && isActive ? false : !canSubmit}
                 title={!isMemberSession && isActive ? t('chat.stopTitle') : undefined}
-                className={`flex min-h-8 w-[112px] items-center justify-center gap-1 rounded-[var(--radius-lg)] px-3 py-1.5 text-xs font-semibold transition-all hover:brightness-105 disabled:opacity-30 ${
+                className={`interactive-surface flex min-h-8 w-[112px] items-center justify-center gap-1 rounded-[var(--radius-lg)] px-3 py-1.5 text-xs font-semibold hover:brightness-105 disabled:opacity-30 disabled:hover:transform-none ${
                   !isMemberSession && isActive
                     ? 'bg-[var(--color-error-container)] text-[var(--color-on-error-container)]'
                     : 'bg-[image:var(--gradient-btn-primary)] text-[var(--color-btn-primary-fg)] shadow-[var(--shadow-button-primary)]'

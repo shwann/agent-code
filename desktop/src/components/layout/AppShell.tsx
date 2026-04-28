@@ -124,10 +124,10 @@ export function AppShell() {
     }
 
     return (
-      <div className="h-screen flex items-center justify-center bg-[var(--color-canvas)] px-6">
+      <div className="page-shell flex h-screen items-center justify-center px-6">
         <form
           onSubmit={handleSubmit}
-          className="w-full max-w-sm rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-panel)]"
+          className="premium-card w-full max-w-sm rounded-[18px] p-6"
         >
           <div className="mb-5 flex items-start gap-3">
             <span className="material-symbols-outlined mt-0.5 rounded-xl bg-[var(--color-primary-fixed)] p-2 text-[20px] text-[var(--color-brand)]">lock</span>
@@ -151,7 +151,7 @@ export function AppShell() {
             value={authTokenInput}
             onChange={(event) => setAuthTokenInput(event.target.value)}
             placeholder={t('app.authTokenPlaceholder')}
-            className="h-10 w-full rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] px-3 text-sm text-[var(--color-text-primary)] outline-none transition-colors placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-border-focus)] focus:shadow-[var(--shadow-focus-ring)]"
+            className="control-field h-10 w-full rounded-[var(--radius-lg)] border border-[var(--color-border)] px-3 text-sm text-[var(--color-text-primary)] outline-none transition-[background-color,border-color,box-shadow] placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-border-focus)] focus:shadow-[var(--shadow-focus-ring)]"
           />
 
           {authError ? (

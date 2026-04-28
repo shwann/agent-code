@@ -48,6 +48,7 @@ export const en = {
 
   // ─── Settings ──────────────────────────────────────
   'settings.title': 'Settings',
+  'settings.general.description': 'Tune appearance, language, model effort, and runtime defaults.',
   'settings.tab.providers': 'Providers',
   'settings.tab.permissions': 'Permissions',
   'settings.tab.general': 'General',
@@ -421,6 +422,7 @@ export const en = {
   'settings.about.socialMedia': 'Social Media',
   'settings.about.updates': 'App Updates',
   'settings.about.updatesDesc': 'Check GitHub Releases, download the installer, and relaunch after install.',
+  'settings.about.description': 'Version, release notes, and project links for this desktop build.',
 
   // Settings > Computer Use
   'settings.tab.computerUse': 'Computer Use',
@@ -484,6 +486,15 @@ export const en = {
   // ─── Empty Session ──────────────────────────────────────
   'empty.title': 'New session',
   'empty.subtitle': 'Start a fresh coding session. AgentCode is ready to help you build, debug, and architect your project.',
+  'empty.workbenchEyebrow': 'Workspace ready',
+  'empty.workbenchTitle': 'What should AgentCode work on?',
+  'empty.workbenchSubtitle': 'Pick a project, continue recent work, or describe the next change directly.',
+  'empty.continueTitle': 'Continue where you left off',
+  'empty.noRecentSessions': 'Recent sessions will appear here after you start working.',
+  'empty.openSession': 'Open session',
+  'empty.workspaceLabel': 'Workspace',
+  'empty.noWorkspace': 'No workspace selected',
+  'empty.messageCount': '{count} messages',
   'empty.placeholder': 'Ask anything...',
   'empty.addFiles': 'Add files or photos',
   'empty.slashCommands': 'Slash commands',

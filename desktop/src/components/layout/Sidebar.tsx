@@ -285,7 +285,7 @@ export function Sidebar() {
                                 setRenameValue('')
                               }
                             }}
-                            className="ml-1 w-full rounded-[var(--radius-md)] border border-[var(--color-border-focus)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-text-primary)] outline-none"
+                            className="control-field ml-1 w-full rounded-[var(--radius-md)] border border-[var(--color-border-focus)] px-3 py-2 text-sm text-[var(--color-text-primary)] outline-none"
                           />
                         ) : (
                           <button
@@ -351,21 +351,21 @@ export function Sidebar() {
 
       {contextMenu && sidebarOpen && (
         <div
-          className="fixed z-50 min-w-[140px] rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] py-1"
-          style={{ left: contextMenu.x, top: contextMenu.y, boxShadow: 'var(--shadow-dropdown)' }}
+          className="floating-menu fixed z-50 min-w-[140px] rounded-[var(--radius-md)] py-1"
+          style={{ left: contextMenu.x, top: contextMenu.y }}
         >
           <button
             onClick={() => {
               const session = sessions.find((s) => s.id === contextMenu.id)
               handleStartRename(contextMenu.id, session?.title || '')
             }}
-            className="w-full px-3 py-1.5 text-left text-xs text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface-hover)]"
+            className="menu-item w-full px-3 py-1.5 text-left text-xs text-[var(--color-text-primary)]"
           >
             {t('common.rename')}
           </button>
           <button
             onClick={() => handleDelete(contextMenu.id)}
-            className="w-full px-3 py-1.5 text-left text-xs text-[var(--color-error)] transition-colors hover:bg-[var(--color-surface-hover)]"
+            className="menu-item w-full px-3 py-1.5 text-left text-xs text-[var(--color-error)]"
           >
             {t('common.delete')}
           </button>

@@ -147,7 +147,7 @@ export const FileSearchMenu = forwardRef<FileSearchMenuHandle, Props>(({ cwd, fi
   return (
     <div
       id="file-search-menu"
-      className="absolute left-0 bottom-full mb-2 z-50 w-full min-w-[480px] overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] shadow-[var(--shadow-dropdown)]"
+      className="floating-menu absolute left-0 bottom-full mb-2 z-50 w-full min-w-[480px] overflow-hidden rounded-xl"
       onMouseDown={(e) => e.stopPropagation()}
     >
       {/* Header with path */}
@@ -188,8 +188,8 @@ export const FileSearchMenu = forwardRef<FileSearchMenuHandle, Props>(({ cwd, fi
                   void loadDir(entry.path, filter)
                 }}
                 onMouseEnter={() => setSelectedIndex(i)}
-                className={`w-full flex items-center gap-3 px-3 py-2 text-left transition-colors ${
-                  selectedIndex === i ? 'bg-[var(--color-surface-hover)]' : 'hover:bg-[var(--color-surface-hover)]'
+                className={`menu-item w-full flex items-center gap-3 px-3 py-2 text-left ${
+                  selectedIndex === i ? 'bg-[var(--color-surface-hover)]' : ''
                 }`}
               >
                 <span className="material-symbols-outlined text-[16px] text-[var(--color-brand)]">folder</span>
@@ -206,8 +206,8 @@ export const FileSearchMenu = forwardRef<FileSearchMenuHandle, Props>(({ cwd, fi
                   data-index={idx}
                   onClick={() => onSelect(entry.path, entry.name)}
                   onMouseEnter={() => setSelectedIndex(idx)}
-                  className={`w-full flex items-center gap-3 px-3 py-2 text-left transition-colors ${
-                    selectedIndex === idx ? 'bg-[var(--color-surface-hover)]' : 'hover:bg-[var(--color-surface-hover)]'
+                  className={`menu-item w-full flex items-center gap-3 px-3 py-2 text-left ${
+                    selectedIndex === idx ? 'bg-[var(--color-surface-hover)]' : ''
                   }`}
                 >
                   <span className="material-symbols-outlined text-[16px] text-[var(--color-text-secondary)]">description</span>

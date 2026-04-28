@@ -115,7 +115,7 @@ export function PermissionModeSelector({ workDir: workDirProp, value, onChange }
       </button>
 
       {open && (
-        <div className="absolute left-0 bottom-full mb-2 w-[320px] rounded-xl bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)] shadow-[var(--shadow-dropdown)] z-50 py-2">
+        <div className="floating-menu absolute left-0 bottom-full z-50 mb-2 w-[320px] rounded-xl py-2">
           <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-[var(--color-outline)]">
             {t('permMode.executionPermissions')}
           </div>
@@ -137,8 +137,7 @@ export function PermissionModeSelector({ workDir: workDirProp, value, onChange }
                 setOpen(false)
               }}
               className={`
-                w-full flex items-start gap-3 px-4 py-3 text-left transition-colors
-                hover:bg-[var(--color-surface-hover)]
+                menu-item w-full flex items-start gap-3 px-4 py-3 text-left
                 ${item.value === currentMode ? 'bg-[var(--color-surface-selected)]' : ''}
               `}
             >
@@ -163,7 +162,7 @@ export function PermissionModeSelector({ workDir: workDirProp, value, onChange }
       {confirmDialog && createPortal(
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 pl-[var(--sidebar-width)]" onClick={() => setConfirmDialog(false)}>
           <div
-            className="w-[420px] rounded-2xl bg-[var(--color-surface-container-lowest)] border border-[var(--color-border)] shadow-[var(--shadow-dropdown)] overflow-hidden"
+            className="floating-menu w-[420px] overflow-hidden rounded-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
