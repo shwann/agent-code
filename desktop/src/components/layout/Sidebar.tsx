@@ -4,6 +4,8 @@ import { useUIStore } from '../../stores/uiStore'
 import { useTranslation } from '../../i18n'
 import { ProjectFilter } from './ProjectFilter'
 import { ConfirmDialog } from '../shared/ConfirmDialog'
+import { CreateProjectDialog } from '../projects/CreateProjectDialog'
+import { invalidateDirectoryPickerCache } from '../shared/DirectoryPicker'
 import type { SessionListItem } from '../../types/session'
 import { useTabStore, SETTINGS_TAB_ID, SCHEDULED_TAB_ID } from '../../stores/tabStore'
 import { useChatStore } from '../../stores/chatStore'
@@ -31,6 +33,7 @@ export function Sidebar() {
   const [searchQuery, setSearchQuery] = useState('')
   const [contextMenu, setContextMenu] = useState<{ id: string; x: number; y: number } | null>(null)
   const [pendingDeleteSessionId, setPendingDeleteSessionId] = useState<string | null>(null)
+  const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false)
   const [renamingId, setRenamingId] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState('')
 
@@ -192,6 +195,15 @@ export function Sidebar() {
           icon={<PlusIcon />}
         >
           {t('sidebar.newSession')}
+        </NavItem>
+        <NavItem
+          active={false}
+          collapsed={!sidebarOpen}
+          label={t('empty.createProject')}
+          onClick={() => setIsProjectDialogOpen(true)}
+          icon={<FolderPlusIcon />}
+        >
+          {t('empty.createProject')}
         </NavItem>
         <NavItem
           active={activeTabId === SCHEDULED_TAB_ID}
@@ -370,6 +382,33 @@ export function Sidebar() {
         cancelLabel={t('common.cancel')}
         confirmVariant="danger"
       />
+      <CreateProjectDialog
+        open={isProjectDialogOpen}
+        onClose={() => setIsProjectDialogOpen(false)}
+        onCreated={(project) => {
+          invalidateDirectoryPickerCache()
+          setIsProjectDialogOpen(false)
+          addToast({
+            type: 'success',
+            message: t('empty.projectCreated', { name: project.name }),
+          })
+          void (async () => {
+            try {
+              const sessionId = await useSessionStore.getState().createSession(project.path)
+              useTabStore.getState().openTab(sessionId, project.name)
+              useChatStore.getState().connectToSession(sessionId)
+            } catch (error) {
+              addToast({
+                type: 'error',
+                message: error instanceof Error ? error.message : t('empty.failedToCreate'),
+              })
+            }
+          })()
+        }}
+        onError={(message) => {
+          addToast({ type: 'error', message })
+        }}
+      />
     </aside>
   )
 }
@@ -462,6 +501,16 @@ function PlusIcon() {
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <line x1="12" y1="5" x2="12" y2="19" />
       <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  )
+}
+
+function FolderPlusIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7l-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z" />
+      <line x1="12" y1="10" x2="12" y2="16" />
+      <line x1="9" y1="13" x2="15" y2="13" />
     </svg>
   )
 }

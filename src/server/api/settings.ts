@@ -100,7 +100,10 @@ async function handleProjectSettings(req: Request, url: URL): Promise<Response> 
 async function handlePermissionMode(req: Request): Promise<Response> {
   if (req.method === 'GET') {
     const mode = await settingsService.getPermissionMode()
-    return Response.json({ mode })
+    return Response.json({
+      mode,
+      ...settingsService.getPermissionCapabilities(),
+    })
   }
 
   if (req.method === 'PUT') {
@@ -110,7 +113,11 @@ async function handlePermissionMode(req: Request): Promise<Response> {
       throw ApiError.badRequest('Missing or invalid "mode" in request body')
     }
     await settingsService.setPermissionMode(mode)
-    return Response.json({ ok: true, mode })
+    return Response.json({
+      ok: true,
+      mode,
+      ...settingsService.getPermissionCapabilities(),
+    })
   }
 
   throw methodNotAllowed(req.method)

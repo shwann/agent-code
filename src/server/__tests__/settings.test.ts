@@ -204,6 +204,17 @@ describe('SettingsService', () => {
     )
   })
 
+  it('should exclude bypassPermissions from capabilities when running as root', () => {
+    ;(process as typeof process & { getuid?: () => number }).getuid = () => 0
+
+    const svc = new SettingsService()
+    const capabilities = svc.getPermissionCapabilities()
+
+    expect(capabilities.canUseBypassPermissions).toBe(false)
+    expect(capabilities.availableModes).not.toContain('bypassPermissions')
+    expect(capabilities.bypassPermissionsUnavailableReason).toContain('running as root')
+  })
+
   it('should serialize concurrent user settings writes to the same file', async () => {
     const svc = new SettingsService()
     const originalNow = Date.now
@@ -298,6 +309,20 @@ describe('Settings API', () => {
     expect(res.status).toBe(200)
     const body = await res.json()
     expect(body.mode).toBe('default')
+    expect(body.availableModes).toContain('default')
+    expect(typeof body.canUseBypassPermissions).toBe('boolean')
+  })
+
+  it('GET /api/permissions/mode should expose root-safe available modes', async () => {
+    ;(process as typeof process & { getuid?: () => number }).getuid = () => 0
+
+    const { req, url, segments } = makeRequest('GET', '/api/permissions/mode')
+    const res = await handleSettingsApi(req, url, segments)
+
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.canUseBypassPermissions).toBe(false)
+    expect(body.availableModes).not.toContain('bypassPermissions')
   })
 
   it('PUT /api/permissions/mode should set mode', async () => {
@@ -382,7 +407,7 @@ describe('Models API', () => {
 
     // Verify persisted
     const { req: r2, url: u2, segments: s2 } = makeRequest('GET', '/api/models/current')
-    const res2 = await handleSettingsApi(r2, u2, s2)
+    const res2 = await handleModelsApi(r2, u2, s2)
     const body2 = await res2.json()
     expect(body2.model.id).toBe('claude-opus-4-7')
   })

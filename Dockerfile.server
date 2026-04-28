@@ -16,11 +16,20 @@ COPY adapters/package.json adapters/bun.lock ./adapters/
 RUN cd adapters && bun install --frozen-lockfile
 
 COPY . .
+COPY docker/entrypoint.server.sh /usr/local/bin/agent-code-entrypoint
+RUN chmod +x /usr/local/bin/agent-code-entrypoint
 
 ENV NODE_ENV=production \
   SERVER_HOST=0.0.0.0 \
-  SERVER_PORT=3456
+  SERVER_PORT=3456 \
+  AGENT_CODE_RUN_USER=agentcode \
+  AGENT_CODE_UID=1001 \
+  AGENT_CODE_GID=1001 \
+  AGENT_CODE_HOME=/home/agentcode \
+  CLAUDE_CONFIG_DIR=/home/agentcode/.claude \
+  AGENT_CODE_WORKSPACE_DIR=/workspace
 
 EXPOSE 3456
 
+ENTRYPOINT ["agent-code-entrypoint"]
 CMD ["bun", "run", "src/server/index.ts", "--host", "0.0.0.0", "--port", "3456"]

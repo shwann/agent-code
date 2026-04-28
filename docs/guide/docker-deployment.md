@@ -21,7 +21,7 @@
 - `desktop/sidecars/claude-sidecar.ts`
 - `adapters/`
 
-`app` 和 `adapters` 使用同一个 `claude_data` volume，因此二者共享 `/root/.claude`。Web UI 写入的 IM 配置会落在 `/root/.claude/adapters.json`，adapter 容器会读取同一份配置。
+`app` 和 `adapters` 使用同一个 `claude_data` volume，因此二者共享 `${AGENT_CODE_HOME:-/home/agentcode}/.claude`。Web UI 写入的 IM 配置会落在该目录下的 `adapters.json`，adapter 容器会读取同一份配置。
 
 ## 前置要求
 
@@ -55,7 +55,16 @@ SERVER_AUTH_TOKEN=change-me-to-a-random-secret
 
 # 宿主机工作区。Web UI 内应选择 /workspace 或 /workspace/xxx。
 # 未设置时默认使用仓库内 ./workspace，Docker Compose 会自动创建目录。
-AGENT_CODE_WORKSPACE_DIR=/data/agent-code/workspace
+AGENT_CODE_HOST_WORKSPACE_DIR=/data/agent-code/workspace
+
+# 容器运行用户。Linux 服务器建议改成宿主机工作区目录的属主 UID/GID。
+AGENT_CODE_RUN_USER=agentcode
+AGENT_CODE_UID=1001
+AGENT_CODE_GID=1001
+AGENT_CODE_HOME=/home/agentcode
+
+# auto 只修正空的 root-owned /workspace；全新独立目录也可设 true 递归修正。
+AGENT_CODE_CHOWN_WORKSPACE=auto
 
 # 时区
 TZ=Asia/Shanghai
@@ -94,9 +103,9 @@ ANTHROPIC_API_KEY=sk-ant-xxx
 cp .env.example .env.docker
 ```
 
-然后编辑 `.env.docker`，补齐上面的关键变量。如果设置了 `AGENT_CODE_WORKSPACE_DIR`，目录不存在时 Docker Compose 会自动创建；macOS Docker Desktop 下该路径必须位于已共享目录内，例如 `/Users/你的用户名/...`，不要使用 `/root/...`。
+然后编辑 `.env.docker`，补齐上面的关键变量。如果设置了 `AGENT_CODE_HOST_WORKSPACE_DIR`，目录不存在时 Docker Compose 会自动创建；macOS Docker Desktop 下该路径必须位于已共享目录内，例如 `/Users/你的用户名/...`，不要使用 `/root/...`。
 
-注意：如果 `AGENT_CODE_WORKSPACE_DIR=/data/agent-code/workspace`，Web UI 内选择项目目录时应使用容器内路径：
+注意：如果 `AGENT_CODE_HOST_WORKSPACE_DIR=/data/agent-code/workspace`，Web UI 内选择项目目录时应使用容器内路径：
 
 ```text
 /workspace
@@ -108,6 +117,32 @@ cp .env.example .env.docker
 ```text
 /data/agent-code/workspace/my-project
 ```
+
+## 容器用户和 workspace 权限
+
+`app` 和 `adapters` 默认不会以 root 身份运行。启动入口会按环境变量创建运行用户，然后降权执行服务：
+
+```env
+AGENT_CODE_RUN_USER=agentcode
+AGENT_CODE_UID=1001
+AGENT_CODE_GID=1001
+AGENT_CODE_HOME=/home/agentcode
+```
+
+Linux 服务器上建议把 `AGENT_CODE_UID` / `AGENT_CODE_GID` 设置为宿主机工作区目录的属主，避免容器写不动 bind mount：
+
+```bash
+id -u
+id -g
+```
+
+如果是全新的独立工作区目录，可以设置：
+
+```env
+AGENT_CODE_CHOWN_WORKSPACE=true
+```
+
+这会递归修正 `/workspace` 属主。不要对已有大仓库或共享目录开启该选项，避免改变宿主机文件属主。默认 `auto` 只会在 `/workspace` 是空的 root-owned 目录时修正顶层目录。
 
 ## 构建镜像
 
@@ -196,7 +231,7 @@ docker compose --env-file .env.docker logs -f adapters
 command: ["bun", "run", "desktop/sidecars/claude-sidecar.ts", "adapters", "--feishu"]
 ```
 
-飞书凭据通过 Web UI 配置，写入 `/root/.claude/adapters.json`：
+飞书凭据通过 Web UI 配置，写入 `${AGENT_CODE_HOME:-/home/agentcode}/.claude/adapters.json`：
 
 1. 打开 Web UI。
 2. 进入设置里的 IM 接入。
@@ -208,7 +243,7 @@ command: ["bun", "run", "desktop/sidecars/claude-sidecar.ts", "adapters", "--fei
 检查配置文件：
 
 ```bash
-docker compose --env-file .env.docker exec app cat /root/.claude/adapters.json
+docker compose --env-file .env.docker exec app sh -lc 'cat "$CLAUDE_CONFIG_DIR/adapters.json"'
 ```
 
 不要把 `appSecret`、配对码或 `SERVER_AUTH_TOKEN` 贴到公开 issue 或日志里。
@@ -269,7 +304,7 @@ docker compose --env-file .env.docker exec adapters bun -e 'const r=await fetch(
 检查配对用户数量：
 
 ```bash
-docker compose --env-file .env.docker exec adapters bun -e 'const fs=require("fs"); const c=JSON.parse(fs.readFileSync("/root/.claude/adapters.json","utf8")); console.log({pairedUsers:(c.feishu?.pairedUsers||[]).length, pairingActive:Date.now()<c.pairing?.expiresAt})'
+docker compose --env-file .env.docker exec adapters sh -lc 'bun -e '\''const fs=require("fs"); const p=process.env.CLAUDE_CONFIG_DIR+"/adapters.json"; const c=JSON.parse(fs.readFileSync(p,"utf8")); console.log({pairedUsers:(c.feishu?.pairedUsers||[]).length, pairingActive:Date.now()<c.pairing?.expiresAt})'\'''
 ```
 
 如果 `pairedUsers` 是 `0`，说明还没有完成身份绑定。去 Web UI 重新生成配对码，然后在飞书私聊机器人发送该配对码。
@@ -285,7 +320,7 @@ docker compose --env-file .env.docker logs adapters --tail=200
 
 常见问题：
 
-- `Missing FEISHU_APP_ID / FEISHU_APP_SECRET`：飞书凭据没写入 `/root/.claude/adapters.json`
+- `Missing FEISHU_APP_ID / FEISHU_APP_SECRET`：飞书凭据没写入 `${AGENT_CODE_HOME:-/home/agentcode}/.claude/adapters.json`
 - `Cannot send ... session not ready`：adapter 无法连上 app WebSocket，优先查鉴权和 `ADAPTER_SERVER_URL`
 - `Unauthorized` / `401`：`SERVER_AUTH_TOKEN` 不一致或未注入
 - `pairedUsers: 0`：用户还没配对
@@ -363,7 +398,7 @@ docker compose --env-file .env.docker down
 docker compose --env-file .env.docker down -v
 ```
 
-`claude_data` volume 保存 `/root/.claude`，包括服务端配置、IM 配置、配对用户等。执行 `down -v` 会清空这些数据。
+`claude_data` volume 保存 `${AGENT_CODE_HOME:-/home/agentcode}/.claude`，包括服务端配置、IM 配置、配对用户等。执行 `down -v` 会清空这些数据。
 
 清理构建缓存：
 
@@ -376,9 +411,9 @@ docker builder prune -af
 - 只暴露 `web` 服务端口，不要把 `app:3456` 映射到公网。
 - `SERVER_AUTH_TOKEN` 使用高强度随机字符串。
 - 外层建议接 HTTPS 反向代理，例如 Nginx、Caddy 或 Traefik。
-- `CC_HAHA_WORKSPACE_DIR` 指向独立工作区目录，不要直接挂载宿主机根目录。
+- `AGENT_CODE_HOST_WORKSPACE_DIR` 指向独立工作区目录，不要直接挂载宿主机根目录。
 - 定期备份 Docker volume `claude_data`。
-- 不要把 `.env.docker`、`/root/.claude/adapters.json`、日志中的 token 上传到公开仓库。
+- 不要把 `.env.docker`、`${AGENT_CODE_HOME:-/home/agentcode}/.claude/adapters.json`、日志中的 token 上传到公开仓库。
 
 ## 一键流程
 

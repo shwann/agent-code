@@ -27,6 +27,12 @@ const ROOT_BYPASS_PERMISSIONS_MESSAGE =
 
 export type PermissionMode = (typeof VALID_PERMISSION_MODES)[number]
 
+export type PermissionCapabilities = {
+  availableModes: PermissionMode[]
+  canUseBypassPermissions: boolean
+  bypassPermissionsUnavailableReason?: string
+}
+
 export class SettingsService {
   private static writeLocks = new Map<string, Promise<void>>()
   private projectRoot?: string
@@ -192,6 +198,20 @@ export class SettingsService {
     }
 
     return resolvedMode
+  }
+
+  /** 获取当前运行环境支持的权限模式 */
+  getPermissionCapabilities(): PermissionCapabilities {
+    const canUseBypassPermissions = this.canUseBypassPermissions()
+    return {
+      availableModes: VALID_PERMISSION_MODES.filter(
+        (mode) => mode !== 'bypassPermissions' || canUseBypassPermissions,
+      ),
+      canUseBypassPermissions,
+      ...(canUseBypassPermissions
+        ? {}
+        : { bypassPermissionsUnavailableReason: ROOT_BYPASS_PERMISSIONS_MESSAGE }),
+    }
   }
 
   /** 设置权限模式 */

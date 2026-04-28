@@ -640,7 +640,7 @@ function ProviderFormModal({ open, onClose, mode, provider, presets }: ProviderF
 // ─── Permission Settings ──────────────────────────────────────
 
 function PermissionSettings() {
-  const { permissionMode, setPermissionMode } = useSettingsStore()
+  const { permissionMode, permissionCapabilities, setPermissionMode } = useSettingsStore()
   const t = useTranslation()
 
   const MODES: Array<{ mode: PermissionMode; icon: string; label: string; desc: string }> = [
@@ -656,12 +656,14 @@ function PermissionSettings() {
       <p className="text-sm text-[var(--color-text-tertiary)] mb-4">{t('settings.permissions.description')}</p>
 
       <div className="flex flex-col gap-2">
-        {MODES.map(({ mode, icon, label, desc }) => {
+        {MODES.filter(({ mode }) =>
+          permissionCapabilities.availableModes.includes(mode),
+        ).map(({ mode, icon, label, desc }) => {
           const isSelected = permissionMode === mode
           return (
             <button
               key={mode}
-              onClick={() => setPermissionMode(mode)}
+              onClick={() => void setPermissionMode(mode).catch(() => {})}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all text-left ${
                 isSelected
                   ? 'border-[var(--color-brand)] bg-[var(--color-surface-container)] shadow-[var(--shadow-focus-ring)]'

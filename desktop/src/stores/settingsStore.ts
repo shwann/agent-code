@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { settingsApi } from '../api/settings'
 import { modelsApi } from '../api/models'
 import type { FeatureFlags } from '../types/features'
-import type { PermissionMode, EffortLevel, ModelInfo, ThemeMode } from '../types/settings'
+import type { PermissionCapabilities, PermissionMode, EffortLevel, ModelInfo, ThemeMode } from '../types/settings'
 import type { Locale } from '../i18n'
 import { useUIStore } from './uiStore'
 
@@ -18,6 +18,7 @@ function getStoredLocale(): Locale {
 
 type SettingsStore = {
   permissionMode: PermissionMode
+  permissionCapabilities: PermissionCapabilities
   currentModel: ModelInfo | null
   effortLevel: EffortLevel
   availableModels: ModelInfo[]
@@ -40,6 +41,10 @@ type SettingsStore = {
 
 export const useSettingsStore = create<SettingsStore>((set, get) => ({
   permissionMode: 'default',
+  permissionCapabilities: {
+    availableModes: ['default', 'acceptEdits', 'plan', 'dontAsk'],
+    canUseBypassPermissions: false,
+  },
   currentModel: null,
   effortLevel: 'medium',
   availableModels: [],
@@ -54,7 +59,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   fetchAll: async () => {
     set({ isLoading: true, error: null })
     try {
-      const [{ mode }, modelsRes, { model }, { level }, userSettings, features] = await Promise.all([
+      const [permissionRes, modelsRes, { model }, { level }, userSettings, features] = await Promise.all([
         settingsApi.getPermissionMode(),
         modelsApi.list(),
         modelsApi.getCurrent(),
@@ -65,7 +70,12 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       const theme = userSettings.theme === 'dark' ? 'dark' : 'light'
       useUIStore.getState().setTheme(theme)
       set({
-        permissionMode: mode,
+        permissionMode: permissionRes.mode,
+        permissionCapabilities: {
+          availableModes: permissionRes.availableModes,
+          canUseBypassPermissions: permissionRes.canUseBypassPermissions,
+          bypassPermissionsUnavailableReason: permissionRes.bypassPermissionsUnavailableReason,
+        },
         availableModels: modelsRes.models,
         activeProviderName: modelsRes.provider?.name ?? null,
         currentModel: model,
@@ -85,12 +95,32 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   },
 
   setPermissionMode: async (mode) => {
+    const { permissionCapabilities } = get()
+    if (
+      mode === 'bypassPermissions' &&
+      !permissionCapabilities.canUseBypassPermissions
+    ) {
+      throw new Error(
+        permissionCapabilities.bypassPermissionsUnavailableReason ||
+          'Bypass permissions mode is not available in this server environment',
+      )
+    }
+
     const prev = get().permissionMode
     set({ permissionMode: mode })
     try {
-      await settingsApi.setPermissionMode(mode)
-    } catch {
+      const res = await settingsApi.setPermissionMode(mode)
+      set({
+        permissionMode: res.mode,
+        permissionCapabilities: {
+          availableModes: res.availableModes,
+          canUseBypassPermissions: res.canUseBypassPermissions,
+          bypassPermissionsUnavailableReason: res.bypassPermissionsUnavailableReason,
+        },
+      })
+    } catch (error) {
       set({ permissionMode: prev })
+      throw error
     }
   },
 

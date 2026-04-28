@@ -2,6 +2,12 @@
 
 export type PermissionMode = 'default' | 'acceptEdits' | 'plan' | 'bypassPermissions' | 'dontAsk'
 
+export type PermissionCapabilities = {
+  availableModes: PermissionMode[]
+  canUseBypassPermissions: boolean
+  bypassPermissionsUnavailableReason?: string
+}
+
 export type EffortLevel = 'low' | 'medium' | 'high' | 'max'
 export type ThemeMode = 'light' | 'dark'
 

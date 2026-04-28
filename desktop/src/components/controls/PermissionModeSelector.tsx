@@ -26,7 +26,7 @@ type Props = {
 
 export function PermissionModeSelector({ workDir: workDirProp, value, onChange }: Props = {}) {
   const t = useTranslation()
-  const { permissionMode: storeMode, setPermissionMode } = useSettingsStore()
+  const { permissionMode: storeMode, permissionCapabilities, setPermissionMode } = useSettingsStore()
   const setSessionPermissionMode = useChatStore((s) => s.setSessionPermissionMode)
   const activeTabId = useTabStore((s) => s.activeTabId)
   const sessions = useSessionStore((s) => s.sessions)
@@ -81,6 +81,9 @@ export function PermissionModeSelector({ workDir: workDirProp, value, onChange }
     dontAsk: t('permMode.label.dontAsk'),
   }
 
+  const availableItems = PERMISSION_ITEMS.filter((item) =>
+    permissionCapabilities.availableModes.includes(item.value),
+  )
   const activeSession = sessions.find((s) => s.id === activeSessionId)
   const workDir = workDirProp || activeSession?.workDir || '~'
 
@@ -116,7 +119,7 @@ export function PermissionModeSelector({ workDir: workDirProp, value, onChange }
           <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-[var(--color-outline)]">
             {t('permMode.executionPermissions')}
           </div>
-          {PERMISSION_ITEMS.map((item) => (
+          {availableItems.map((item) => (
             <button
               key={item.value}
               onClick={() => {
@@ -128,7 +131,7 @@ export function PermissionModeSelector({ workDir: workDirProp, value, onChange }
                 if (isControlled) {
                   onChange?.(item.value)
                 } else {
-                  void setPermissionMode(item.value)
+                  void setPermissionMode(item.value).catch(() => {})
                   if (activeTabId) setSessionPermissionMode(activeTabId, item.value)
                 }
                 setOpen(false)
@@ -210,7 +213,7 @@ export function PermissionModeSelector({ workDir: workDirProp, value, onChange }
                   if (isControlled) {
                     onChange?.('bypassPermissions')
                   } else {
-                    void setPermissionMode('bypassPermissions')
+                    void setPermissionMode('bypassPermissions').catch(() => {})
                     if (activeTabId) setSessionPermissionMode(activeTabId, 'bypassPermissions')
                   }
                   setConfirmDialog(false)

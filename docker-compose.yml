@@ -12,6 +12,14 @@ services:
       SERVER_HOST: 0.0.0.0
       SERVER_PORT: 3456
       SERVER_AUTH_TOKEN: ${SERVER_AUTH_TOKEN:?set SERVER_AUTH_TOKEN in .env}
+      AGENT_CODE_RUN_USER: ${AGENT_CODE_RUN_USER:-agentcode}
+      AGENT_CODE_UID: ${AGENT_CODE_UID:-1001}
+      AGENT_CODE_GID: ${AGENT_CODE_GID:-1001}
+      AGENT_CODE_HOME: ${AGENT_CODE_HOME:-/home/agentcode}
+      AGENT_CODE_CHOWN_WORKSPACE: ${AGENT_CODE_CHOWN_WORKSPACE:-auto}
+      HOME: ${AGENT_CODE_HOME:-/home/agentcode}
+      CLAUDE_CONFIG_DIR: ${AGENT_CODE_HOME:-/home/agentcode}/.claude
+      AGENT_CODE_WORKSPACE_DIR: /workspace
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       ANTHROPIC_AUTH_TOKEN: ${ANTHROPIC_AUTH_TOKEN:-}
       ANTHROPIC_BASE_URL: ${ANTHROPIC_BASE_URL:-}
@@ -26,9 +34,9 @@ services:
       VITE_ENABLE_COMPUTER_USE: ${VITE_ENABLE_COMPUTER_USE:-${SERVER_ENABLE_COMPUTER_USE:-1}}
       TZ: ${TZ:-Asia/Shanghai}
     volumes:
-      - agent_code_data:/root/.claude
+      - agent_code_data:${AGENT_CODE_HOME:-/home/agentcode}/.claude
       - type: bind
-        source: ${AGENT_CODE_WORKSPACE_DIR:-${CC_HAHA_WORKSPACE_DIR:-./workspace}}
+        source: ${AGENT_CODE_HOST_WORKSPACE_DIR:-${AGENT_CODE_WORKSPACE_DIR:-${CC_HAHA_WORKSPACE_DIR:-./workspace}}}
         target: /workspace
         bind:
           create_host_path: true
@@ -45,11 +53,18 @@ services:
     environment:
       ADAPTER_SERVER_URL: ws://app:3456
       SERVER_AUTH_TOKEN: ${SERVER_AUTH_TOKEN:?set SERVER_AUTH_TOKEN in .env}
+      AGENT_CODE_RUN_USER: ${AGENT_CODE_RUN_USER:-agentcode}
+      AGENT_CODE_UID: ${AGENT_CODE_UID:-1001}
+      AGENT_CODE_GID: ${AGENT_CODE_GID:-1001}
+      AGENT_CODE_HOME: ${AGENT_CODE_HOME:-/home/agentcode}
+      HOME: ${AGENT_CODE_HOME:-/home/agentcode}
+      CLAUDE_CONFIG_DIR: ${AGENT_CODE_HOME:-/home/agentcode}/.claude
+      AGENT_CODE_WORKSPACE_DIR: /workspace
       FEISHU_APP_ID: ${FEISHU_APP_ID:-}
       FEISHU_APP_SECRET: ${FEISHU_APP_SECRET:-}
       TZ: ${TZ:-Asia/Shanghai}
     volumes:
-      - agent_code_data:/root/.claude
+      - agent_code_data:${AGENT_CODE_HOME:-/home/agentcode}/.claude
     depends_on:
       - app
     command: ["bun", "run", "desktop/sidecars/claude-sidecar.ts", "adapters", "--feishu"]
