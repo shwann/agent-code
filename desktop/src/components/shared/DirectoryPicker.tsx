@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
+import { projectsApi } from '../../api/projects'
 import { sessionsApi, type RecentProject } from '../../api/sessions'
 import { filesystemApi } from '../../api/filesystem'
 import { useTranslation } from '../../i18n'
@@ -7,6 +8,7 @@ import { useTranslation } from '../../i18n'
 type Props = {
   value: string
   onChange: (path: string) => void
+  onCreateProject?: () => void
 }
 
 type DirEntry = { name: string; path: string; isDirectory: boolean }
@@ -16,11 +18,16 @@ let cachedProjects: RecentProject[] | null = null
 let cacheTimestamp = 0
 const CACHE_TTL = 30_000 // 30s
 
+export function invalidateDirectoryPickerCache() {
+  cachedProjects = null
+  cacheTimestamp = 0
+}
+
 function isTauriRuntime() {
   return typeof window !== 'undefined' && ('__TAURI_INTERNALS__' in window || '__TAURI__' in window)
 }
 
-export function DirectoryPicker({ value, onChange }: Props) {
+export function DirectoryPicker({ value, onChange, onCreateProject }: Props) {
   const t = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
   const [mode, setMode] = useState<'recent' | 'browse'>('recent')
@@ -83,8 +90,30 @@ export function DirectoryPicker({ value, onChange }: Props) {
       return
     }
     setLoading(true)
-    sessionsApi.getRecentProjects()
-      .then(({ projects: p }) => {
+    Promise.all([
+      sessionsApi.getRecentProjects(),
+      projectsApi.list().catch(() => ({ projects: [] })),
+    ])
+      .then(([recent, registered]) => {
+        const byPath = new Map<string, RecentProject>()
+        for (const project of registered.projects) {
+          byPath.set(project.path, {
+            projectPath: `registered:${project.id}`,
+            realPath: project.path,
+            projectName: project.name,
+            isGit: false,
+            repoName: null,
+            branch: null,
+            modifiedAt: project.updatedAt,
+            sessionCount: 0,
+          })
+        }
+        for (const project of recent.projects) {
+          byPath.set(project.realPath, project)
+        }
+        const p = [...byPath.values()].sort((a, b) =>
+          new Date(b.modifiedAt).getTime() - new Date(a.modifiedAt).getTime(),
+        )
         cachedProjects = p
         cacheTimestamp = Date.now()
         setProjects(p)
@@ -109,7 +138,7 @@ export function DirectoryPicker({ value, onChange }: Props) {
     setIsOpen(false)
     setMode('recent')
     // Invalidate cache so next open reflects the new selection
-    cachedProjects = null
+    invalidateDirectoryPickerCache()
   }
 
   const handleChooseFolder = async () => {
@@ -132,6 +161,12 @@ export function DirectoryPicker({ value, onChange }: Props) {
       setMode('browse')
       loadBrowseDir(value || undefined)
     }
+  }
+
+  const handleCreateProject = () => {
+    setIsOpen(false)
+    setMode('recent')
+    onCreateProject?.()
   }
 
   // Find selected project info
@@ -242,6 +277,18 @@ export function DirectoryPicker({ value, onChange }: Props) {
 
               {/* Divider + Choose different folder */}
               <div className="border-t border-[var(--color-border)]">
+                {onCreateProject && (
+                  <button
+                    onClick={handleCreateProject}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[var(--color-surface-hover)] transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-[20px] text-[var(--color-text-tertiary)]">add_circle</span>
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold text-[var(--color-text-primary)]">{t('dirPicker.createProject')}</div>
+                      <div className="truncate text-[11px] text-[var(--color-text-tertiary)]">{t('dirPicker.createProjectDesc')}</div>
+                    </div>
+                  </button>
+                )}
                 <button
                   onClick={handleChooseFolder}
                   className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[var(--color-surface-hover)] transition-colors"

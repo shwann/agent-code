@@ -54,7 +54,8 @@ CC_HAHA_HTTP_PORT=8080
 SERVER_AUTH_TOKEN=change-me-to-a-random-secret
 
 # 宿主机工作区。Web UI 内应选择 /workspace 或 /workspace/xxx。
-CC_HAHA_WORKSPACE_DIR=/data/cc-haha/workspace
+# 未设置时默认使用仓库内 ./workspace，Docker Compose 会自动创建目录。
+AGENT_CODE_WORKSPACE_DIR=/data/agent-code/workspace
 
 # 时区
 TZ=Asia/Shanghai
@@ -90,13 +91,12 @@ ANTHROPIC_API_KEY=sk-ant-xxx
 ## 准备目录
 
 ```bash
-mkdir -p /data/cc-haha/workspace
 cp .env.example .env.docker
 ```
 
-然后编辑 `.env.docker`，补齐上面的关键变量。
+然后编辑 `.env.docker`，补齐上面的关键变量。如果设置了 `AGENT_CODE_WORKSPACE_DIR`，目录不存在时 Docker Compose 会自动创建；macOS Docker Desktop 下该路径必须位于已共享目录内，例如 `/Users/你的用户名/...`，不要使用 `/root/...`。
 
-注意：如果 `CC_HAHA_WORKSPACE_DIR=/data/cc-haha/workspace`，Web UI 内选择项目目录时应使用容器内路径：
+注意：如果 `AGENT_CODE_WORKSPACE_DIR=/data/agent-code/workspace`，Web UI 内选择项目目录时应使用容器内路径：
 
 ```text
 /workspace
@@ -106,7 +106,7 @@ cp .env.example .env.docker
 不要在 Web UI 里选择宿主机路径：
 
 ```text
-/data/cc-haha/workspace/my-project
+/data/agent-code/workspace/my-project
 ```
 
 ## 构建镜像

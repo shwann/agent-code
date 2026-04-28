@@ -27,7 +27,11 @@ services:
       TZ: ${TZ:-Asia/Shanghai}
     volumes:
       - agent_code_data:/root/.claude
-      - ${AGENT_CODE_WORKSPACE_DIR:-${CC_HAHA_WORKSPACE_DIR:-./workspace}}:/workspace
+      - type: bind
+        source: ${AGENT_CODE_WORKSPACE_DIR:-${CC_HAHA_WORKSPACE_DIR:-./workspace}}
+        target: /workspace
+        bind:
+          create_host_path: true
     expose:
       - "3456"
 

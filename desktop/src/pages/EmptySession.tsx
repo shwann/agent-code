@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { projectsApi } from '../api/projects'
 import { skillsApi } from '../api/skills'
 import { useTranslation } from '../i18n'
 import { useSessionStore } from '../stores/sessionStore'
@@ -9,7 +10,7 @@ import { useSettingsStore } from '../stores/settingsStore'
 import { useUIStore } from '../stores/uiStore'
 import { SETTINGS_TAB_ID, useTabStore } from '../stores/tabStore'
 import { OFFICIAL_DEFAULT_MODEL_ID } from '../constants/modelCatalog'
-import { DirectoryPicker } from '../components/shared/DirectoryPicker'
+import { DirectoryPicker, invalidateDirectoryPickerCache } from '../components/shared/DirectoryPicker'
 import { PermissionModeSelector } from '../components/controls/PermissionModeSelector'
 import { ModelSelector } from '../components/controls/ModelSelector'
 import { AttachmentGallery } from '../components/chat/AttachmentGallery'
@@ -44,6 +45,10 @@ export function EmptySession() {
   const [plusMenuOpen, setPlusMenuOpen] = useState(false)
   const [slashMenuOpen, setSlashMenuOpen] = useState(false)
   const [fileSearchOpen, setFileSearchOpen] = useState(false)
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false)
+  const [projectName, setProjectName] = useState('')
+  const [projectDescription, setProjectDescription] = useState('')
+  const [isCreatingProject, setIsCreatingProject] = useState(false)
   const [localSlashPanel, setLocalSlashPanel] = useState<LocalSlashCommandName | null>(null)
   const [atFilter, setAtFilter] = useState('')
   const [atCursorPos, setAtCursorPos] = useState(-1)
@@ -453,6 +458,36 @@ export function EmptySession() {
     })
   }
 
+  const handleCreateProject = async (event: React.FormEvent) => {
+    event.preventDefault()
+    const name = projectName.trim()
+    if (!name || isCreatingProject) return
+
+    setIsCreatingProject(true)
+    try {
+      const { project } = await projectsApi.create({
+        name,
+        description: projectDescription.trim() || undefined,
+      })
+      invalidateDirectoryPickerCache()
+      setWorkDir(project.path)
+      setProjectName('')
+      setProjectDescription('')
+      setIsProjectModalOpen(false)
+      addToast({
+        type: 'success',
+        message: t('empty.projectCreated', { name: project.name }),
+      })
+    } catch (error) {
+      addToast({
+        type: 'error',
+        message: error instanceof Error ? error.message : t('empty.projectCreateFailed'),
+      })
+    } finally {
+      setIsCreatingProject(false)
+    }
+  }
+
   return (
     <div className="empty-stage relative flex flex-1 flex-col overflow-hidden">
       <div className="flex flex-1 flex-col items-center justify-center p-8 pb-40">
@@ -600,12 +635,139 @@ export function EmptySession() {
           </div>
 
           <div>
-            <DirectoryPicker value={workDir} onChange={setWorkDir} />
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <DirectoryPicker
+                value={workDir}
+                onChange={setWorkDir}
+                onCreateProject={() => setIsProjectModalOpen(true)}
+              />
+              <button
+                type="button"
+                onClick={() => setIsProjectModalOpen(true)}
+                className="flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)]"
+              >
+                <span className="material-symbols-outlined text-[15px]">create_new_folder</span>
+                {t('empty.createProject')}
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileSelect} />
+      {isProjectModalOpen && (
+        <CreateProjectModal
+          name={projectName}
+          description={projectDescription}
+          isSubmitting={isCreatingProject}
+          onNameChange={setProjectName}
+          onDescriptionChange={setProjectDescription}
+          onSubmit={handleCreateProject}
+          onClose={() => {
+            if (!isCreatingProject) {
+              setIsProjectModalOpen(false)
+            }
+          }}
+        />
+      )}
+    </div>
+  )
+}
+
+type CreateProjectModalProps = {
+  name: string
+  description: string
+  isSubmitting: boolean
+  onNameChange: (value: string) => void
+  onDescriptionChange: (value: string) => void
+  onSubmit: (event: React.FormEvent) => void
+  onClose: () => void
+}
+
+function CreateProjectModal({
+  name,
+  description,
+  isSubmitting,
+  onNameChange,
+  onDescriptionChange,
+  onSubmit,
+  onClose,
+}: CreateProjectModalProps) {
+  const t = useTranslation()
+
+  return (
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/45 px-4">
+      <form
+        onSubmit={onSubmit}
+        className="w-full max-w-[460px] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-lowest)] p-5 shadow-[var(--shadow-dropdown)]"
+      >
+        <div className="mb-4 flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-base font-semibold text-[var(--color-text-primary)]">
+              {t('empty.createProjectTitle')}
+            </h2>
+            <p className="mt-1 text-xs leading-5 text-[var(--color-text-tertiary)]">
+              {t('empty.createProjectSubtitle')}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="rounded-lg p-1 text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)] disabled:opacity-50"
+            aria-label={t('common.cancel')}
+          >
+            <span className="material-symbols-outlined text-[18px]">close</span>
+          </button>
+        </div>
+
+        <div className="space-y-4">
+          <label className="block">
+            <span className="mb-1 block text-xs font-semibold text-[var(--color-text-secondary)]">
+              {t('empty.projectName')}
+            </span>
+            <input
+              value={name}
+              onChange={(event) => onNameChange(event.target.value)}
+              className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-3 py-2 text-sm text-[var(--color-text-primary)] outline-none transition-colors placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-brand)]"
+              placeholder={t('empty.projectNamePlaceholder')}
+              disabled={isSubmitting}
+              autoFocus
+            />
+          </label>
+
+          <label className="block">
+            <span className="mb-1 block text-xs font-semibold text-[var(--color-text-secondary)]">
+              {t('empty.projectDescription')}
+            </span>
+            <textarea
+              value={description}
+              onChange={(event) => onDescriptionChange(event.target.value)}
+              className="min-h-[96px] w-full resize-none rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-3 py-2 text-sm leading-5 text-[var(--color-text-primary)] outline-none transition-colors placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-brand)]"
+              placeholder={t('empty.projectDescriptionPlaceholder')}
+              disabled={isSubmitting}
+            />
+          </label>
+        </div>
+
+        <div className="mt-5 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="rounded-lg px-3 py-2 text-sm font-medium text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface-hover)] disabled:opacity-50"
+          >
+            {t('common.cancel')}
+          </button>
+          <button
+            type="submit"
+            disabled={!name.trim() || isSubmitting}
+            className="flex min-w-[104px] items-center justify-center gap-2 rounded-lg bg-[image:var(--gradient-btn-primary)] px-3 py-2 text-sm font-semibold text-[var(--color-btn-primary-fg)] shadow-[var(--shadow-button-primary)] transition-all hover:brightness-105 disabled:opacity-30"
+          >
+            {isSubmitting ? t('empty.creatingProject') : t('empty.createProject')}
+          </button>
+        </div>
+      </form>
     </div>
   )
 }
