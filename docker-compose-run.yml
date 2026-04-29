@@ -54,7 +54,7 @@ services:
     environment:
       SERVER_AUTH_TOKEN: ${SERVER_AUTH_TOKEN:?set SERVER_AUTH_TOKEN in .env}
     ports:
-      - "${AGENT_CODE_HTTP_PORT:-${CC_HAHA_HTTP_PORT:-8080}}:80"
+      - "${AGENT_CODE_HTTP_PORT:-${CC_HAHA_HTTP_PORT:-19901}}:80"
 
 volumes:
   agent_code_data:
