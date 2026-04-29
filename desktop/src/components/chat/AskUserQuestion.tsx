@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
+import { CheckCircle2, CircleHelp, SendHorizontal } from 'lucide-react'
 import { useChatStore } from '../../stores/chatStore'
 import { useTabStore } from '../../stores/tabStore'
 import { useTranslation } from '../../i18n'
@@ -146,10 +147,8 @@ export function AskUserQuestion({ toolUseId, input, result }: Props) {
           ? 'bg-[var(--color-surface-container-low)]'
           : 'bg-[var(--color-surface-container)]'
       }`}>
-        <div className="flex items-center justify-center w-8 h-8 rounded-[var(--radius-md)] bg-[var(--color-secondary)]/10">
-          <span className="material-symbols-outlined text-[18px] text-[var(--color-secondary)]">
-            help
-          </span>
+        <div className="flex h-8 w-8 items-center justify-center text-[var(--color-secondary)]">
+          <CircleHelp size={18} strokeWidth={1.3} />
         </div>
         <div className="flex-1 min-w-0">
           <span className="text-sm font-semibold text-[var(--color-text-primary)]">
@@ -181,7 +180,7 @@ export function AskUserQuestion({ toolUseId, input, result }: Props) {
                 }`}
               >
                 {isAnswered && (
-                  <span className="material-symbols-outlined text-[14px] text-[var(--color-success)]">check_circle</span>
+                  <CheckCircle2 size={14} strokeWidth={1.35} className="text-[var(--color-success)]" />
                 )}
                 {tabLabel}
                 {isActive && (
@@ -277,7 +276,7 @@ export function AskUserQuestion({ toolUseId, input, result }: Props) {
         {/* Submitted answer display */}
         {submitted && (
           <div className="flex items-center gap-2 text-xs text-[var(--color-text-secondary)]">
-            <span className="material-symbols-outlined text-[14px] text-[var(--color-success)]">check_circle</span>
+            <CheckCircle2 size={14} strokeWidth={1.35} className="text-[var(--color-success)]" />
             <span>
               {t('question.answeredPrefix')}<strong>{answeredText}</strong>
             </span>
@@ -294,7 +293,7 @@ export function AskUserQuestion({ toolUseId, input, result }: Props) {
             disabled={!allAnswered || !pendingRequest}
             onClick={handleSubmit}
             icon={
-              <span className="material-symbols-outlined text-[14px]">send</span>
+              <SendHorizontal size={14} strokeWidth={1.45} />
             }
           >
             {t('question.submit')}

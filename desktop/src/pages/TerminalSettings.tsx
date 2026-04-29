@@ -173,7 +173,7 @@ export function TerminalSettings() {
   }
 
   return (
-    <div className="flex h-full min-h-[620px] flex-col overflow-hidden">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden">
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <h2 className="text-base font-semibold text-[var(--color-text-primary)]">
@@ -248,7 +248,7 @@ export function TerminalSettings() {
           <div
             ref={hostRef}
             data-testid="settings-terminal-host"
-            className="settings-terminal-host h-[calc(100%-2rem)] w-full overflow-hidden p-2"
+            className="settings-terminal-host h-[calc(100%-2rem)] min-h-0 w-full overflow-hidden p-2"
           />
         </div>
       )}

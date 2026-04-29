@@ -1,5 +1,6 @@
 import { CodeViewer } from './CodeViewer'
 import { useState } from 'react'
+import { CheckCircle2, CircleAlert } from 'lucide-react'
 import { useTranslation } from '../../i18n'
 import { InlineImageGallery } from './InlineImageGallery'
 
@@ -40,12 +41,12 @@ export function ToolResultBlock({ content, isError, toolName, standalone = true 
         isError
           ? 'bg-[var(--color-error-container)] text-[var(--color-error)]'
           : 'bg-[var(--color-surface-container-high)] text-[var(--color-outline)]'
-      }`}
+        }`}
       >
         <span className="flex items-center gap-1.5">
-          <span className="material-symbols-outlined text-[12px]">
-            {isError ? 'error' : 'check_circle'}
-          </span>
+          {isError
+            ? <CircleAlert size={12} strokeWidth={1.4} />
+            : <CheckCircle2 size={12} strokeWidth={1.4} />}
           {toolName ? t('tool.result', { toolName }) : t('tool.resultGeneric')}
         </span>
         <span className={`px-2 py-0.5 rounded-full text-[9px] ${

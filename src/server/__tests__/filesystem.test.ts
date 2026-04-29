@@ -72,4 +72,41 @@ describe('filesystem API', () => {
     expect(fileRes.status).toBe(200)
     expect(fileRes.headers.get('Content-Type')).toBe('image/png')
   })
+
+  it('reads text files for preview', async () => {
+    const homeFixtureDir = await fsp.mkdtemp(path.join(process.env.HOME || path.sep, 'claude-filesystem-test-'))
+    cleanupDirs.add(homeFixtureDir)
+    const filePath = path.join(homeFixtureDir, 'note.ts')
+    await fsp.writeFile(filePath, 'export const value = 1\n')
+
+    const res = await handleFilesystemRoute(
+      '/api/filesystem/read',
+      makeUrl('/api/filesystem/read', {
+        path: filePath,
+      }),
+    )
+
+    expect(res.status).toBe(200)
+    const body = await res.json() as { name: string; content: string }
+    expect(body.name).toBe('note.ts')
+    expect(body.content).toBe('export const value = 1\n')
+  })
+
+  it('rejects text preview symlinks that resolve outside allowed roots', async () => {
+    if (process.platform === 'win32' || !fs.existsSync('/etc/hosts')) return
+
+    const homeFixtureDir = await fsp.mkdtemp(path.join(process.env.HOME || path.sep, 'claude-filesystem-test-'))
+    cleanupDirs.add(homeFixtureDir)
+    const linkPath = path.join(homeFixtureDir, 'hosts.txt')
+    await fsp.symlink('/etc/hosts', linkPath)
+
+    const res = await handleFilesystemRoute(
+      '/api/filesystem/read',
+      makeUrl('/api/filesystem/read', {
+        path: linkPath,
+      }),
+    )
+
+    expect(res.status).toBe(403)
+  })
 })

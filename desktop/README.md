@@ -28,3 +28,16 @@ bun run tauri dev
 ```bash
 xattr -cr /Applications/Claude\ Code\ Haha.app
 ```
+
+在项目根目录执行：
+
+  cd desktop
+  SKIP_INSTALL=1 bun run build:macos-arm64
+
+  如果是首次打包，先装依赖：
+
+  bun install
+  cd desktop && bun install
+  cd ../adapters && bun install
+  cd ../desktop
+  bun run build:macos-arm64

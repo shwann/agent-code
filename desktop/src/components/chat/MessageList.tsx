@@ -1,4 +1,5 @@
 import { useRef, useEffect, useMemo, memo, useState, useCallback } from 'react'
+import { Code2, History, RotateCcw } from 'lucide-react'
 import { ApiError } from '../../api/client'
 import { sessionsApi, type SessionRewindResponse } from '../../api/sessions'
 import { useChatStore } from '../../stores/chatStore'
@@ -387,7 +388,7 @@ export function MessageList({ sessionId }: MessageListProps = {}) {
               disabled={isLoadingPreview || Boolean(rewindError)}
               icon={
                 !isExecutingRewind ? (
-                  <span className="material-symbols-outlined text-[16px]">undo</span>
+                  <RotateCcw size={15} strokeWidth={1.4} />
                 ) : undefined
               }
             >
@@ -416,7 +417,7 @@ export function MessageList({ sessionId }: MessageListProps = {}) {
             <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
               <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-3">
                 <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-[var(--color-text-primary)]">
-                  <span className="material-symbols-outlined text-[16px] text-[var(--color-brand)]">history</span>
+                  <History size={15} strokeWidth={1.35} className="text-[var(--color-brand)]" />
                   {t('chat.rewindConversationCardTitle')}
                 </div>
                 <p className="text-sm leading-relaxed text-[var(--color-text-secondary)]">
@@ -428,7 +429,7 @@ export function MessageList({ sessionId }: MessageListProps = {}) {
 
               <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-4 py-3">
                 <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-[var(--color-text-primary)]">
-                  <span className="material-symbols-outlined text-[16px] text-[var(--color-brand)]">code</span>
+                  <Code2 size={15} strokeWidth={1.35} className="text-[var(--color-brand)]" />
                   {t('chat.rewindCodeCardTitle')}
                 </div>
                 {rewindPreview.code.available ? (

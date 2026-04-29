@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { X } from 'lucide-react'
 import { skillsApi } from '../../api/skills'
 import { mcpApi } from '../../api/mcp'
 import { useTranslation } from '../../i18n'
@@ -74,7 +75,7 @@ function PanelShell({
           onClick={onClose}
           className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)]"
         >
-          <span className="material-symbols-outlined text-[18px]">close</span>
+          <X size={18} strokeWidth={1.35} />
         </button>
       </div>
       <div className="max-h-[420px] overflow-y-auto px-5 py-4">{children}</div>

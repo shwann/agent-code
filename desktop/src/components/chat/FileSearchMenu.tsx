@@ -1,4 +1,5 @@
 import { forwardRef, useState, useEffect, useRef, useCallback, useImperativeHandle } from 'react'
+import { FileText, Folder, FolderOpen, LoaderCircle } from 'lucide-react'
 import { ApiError } from '../../api/client'
 import { filesystemApi } from '../../api/filesystem'
 import { useTranslation } from '../../i18n'
@@ -152,7 +153,7 @@ export const FileSearchMenu = forwardRef<FileSearchMenuHandle, Props>(({ cwd, fi
     >
       {/* Header with path */}
       <div className="flex items-center gap-1.5 border-b border-[var(--color-border)] px-3 py-2 text-[11px]">
-        <span className="material-symbols-outlined text-[14px] text-[var(--color-text-tertiary)]">folder_open</span>
+        <FolderOpen size={14} strokeWidth={1.3} className="text-[var(--color-text-tertiary)]" />
         <span className="text-[var(--color-text-tertiary)] font-mono">{cwd.split('/').pop() || cwd}</span>
         {breadcrumbs.map((seg, i) => (
           <span key={i} className="flex items-center gap-1">
@@ -161,7 +162,7 @@ export const FileSearchMenu = forwardRef<FileSearchMenuHandle, Props>(({ cwd, fi
           </span>
         ))}
         {loading && (
-          <span className="material-symbols-outlined text-[12px] text-[var(--color-text-tertiary)] animate-spin ml-1">progress_activity</span>
+          <LoaderCircle size={12} strokeWidth={1.35} className="ml-1 animate-spin text-[var(--color-text-tertiary)]" />
         )}
       </div>
 
@@ -192,7 +193,7 @@ export const FileSearchMenu = forwardRef<FileSearchMenuHandle, Props>(({ cwd, fi
                   selectedIndex === i ? 'bg-[var(--color-surface-hover)]' : ''
                 }`}
               >
-                <span className="material-symbols-outlined text-[16px] text-[var(--color-brand)]">folder</span>
+                <Folder size={16} strokeWidth={1.3} className="text-[var(--color-brand)]" />
                 <span className="text-sm text-[var(--color-text-primary)] truncate">{entry.name}</span>
               </button>
             ))}
@@ -210,7 +211,7 @@ export const FileSearchMenu = forwardRef<FileSearchMenuHandle, Props>(({ cwd, fi
                     selectedIndex === idx ? 'bg-[var(--color-surface-hover)]' : ''
                   }`}
                 >
-                  <span className="material-symbols-outlined text-[16px] text-[var(--color-text-secondary)]">description</span>
+                  <FileText size={16} strokeWidth={1.3} className="text-[var(--color-text-secondary)]" />
                   <span className="text-sm text-[var(--color-text-primary)] truncate">{entry.name}</span>
                 </button>
               )

@@ -85,7 +85,7 @@ export function Settings() {
         </div>
 
         {/* Tab content */}
-        <div className="settings-content flex-1 overflow-y-auto px-8 py-7">
+        <div className={`settings-content flex-1 px-8 py-7 ${activeTab === 'terminal' ? 'flex min-h-0 flex-col overflow-hidden' : 'overflow-y-auto'}`}>
           <div className="mb-6 max-w-4xl">
             <div className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-brand)]">
               {t('settings.title')}
@@ -97,7 +97,7 @@ export function Settings() {
               {activeMeta.description}
             </p>
           </div>
-          <div className="max-w-4xl">
+          <div className={`max-w-4xl ${activeTab === 'terminal' ? 'min-h-0 flex-1' : ''}`}>
             {activeTab === 'providers' && <ProviderSettings />}
             {activeTab === 'permissions' && <PermissionSettings />}
             {activeTab === 'general' && <GeneralSettings />}

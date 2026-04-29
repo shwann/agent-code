@@ -1,3 +1,4 @@
+import { RotateCcw } from 'lucide-react'
 import { CopyButton } from '../shared/CopyButton'
 
 type Props = {
@@ -37,7 +38,7 @@ export function MessageActionBar({
             title={rewindLabel}
             className="inline-flex min-h-7 items-center gap-1 rounded-full border border-[var(--color-border)]/70 bg-[var(--color-surface-container-low)] px-2.5 text-[11px] font-medium text-[var(--color-text-tertiary)] transition-colors hover:border-[var(--color-brand)]/35 hover:text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]/35"
           >
-            <span className="material-symbols-outlined text-[14px]">undo</span>
+            <RotateCcw size={13} strokeWidth={1.35} />
             <span className="hidden min-[920px]:inline">Rewind</span>
           </button>
         )}

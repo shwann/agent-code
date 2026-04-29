@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
+import { Paperclip, Plus, SendHorizontal, Square } from 'lucide-react'
 import { useTranslation } from '../../i18n'
 import { useChatStore } from '../../stores/chatStore'
 import { SETTINGS_TAB_ID, useTabStore } from '../../stores/tabStore'
@@ -636,9 +637,9 @@ export function ChatInput({ variant = 'default' }: ChatInputProps) {
                     <button
                       onClick={() => setPlusMenuOpen((value) => !value)}
                       aria-label="Open composer tools"
-                      className="icon-button rounded-[var(--radius-md)] p-1.5 text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)]"
+                      className="icon-button flex h-8 w-8 items-center justify-center rounded-[var(--radius-md)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)]"
                     >
-                      <span className="material-symbols-outlined text-[18px]">add</span>
+                      <Plus size={17} strokeWidth={1.35} />
                     </button>
 
                     {plusMenuOpen && (
@@ -650,7 +651,7 @@ export function ChatInput({ variant = 'default' }: ChatInputProps) {
                           }}
                           className="menu-item flex w-full items-center gap-3 px-4 py-2.5 text-left"
                         >
-                          <span className="material-symbols-outlined text-[18px] text-[var(--color-text-secondary)]">attach_file</span>
+                          <Paperclip size={16} strokeWidth={1.35} className="text-[var(--color-text-secondary)]" />
                           <span className="text-sm text-[var(--color-text-primary)]">{addFilesLabel}</span>
                         </button>
                         <button
@@ -683,9 +684,9 @@ export function ChatInput({ variant = 'default' }: ChatInputProps) {
                     : 'bg-[image:var(--gradient-btn-primary)] text-[var(--color-btn-primary-fg)] shadow-[var(--shadow-button-primary)]'
                 }`}
               >
-                <span className="material-symbols-outlined text-[14px]">
-                  {!isMemberSession && isActive ? 'stop' : 'arrow_forward'}
-                </span>
+                {!isMemberSession && isActive
+                  ? <Square size={13} strokeWidth={1.45} />
+                  : <SendHorizontal size={14} strokeWidth={1.45} />}
                 {!isMemberSession && isActive ? t('common.stop') : isMemberSession ? t('common.send') : t('common.run')}
               </button>
             </div>

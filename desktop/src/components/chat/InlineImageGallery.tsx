@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Image, Maximize2 } from 'lucide-react'
 import { ImageGalleryModal } from './ImageGalleryModal'
 import { getBaseUrl, withServerAuthQuery } from '../../api/client'
 
@@ -55,7 +56,7 @@ export function InlineImageGallery({ text }: Props) {
     <>
       <div className="mt-3 space-y-2">
         <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--color-outline)]">
-          <span className="material-symbols-outlined text-[12px]">image</span>
+          <Image size={12} strokeWidth={1.35} />
           {images.length === 1 ? '1 image' : `${images.length} images`}
         </div>
         <div className={`grid gap-2 ${images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
@@ -78,8 +79,8 @@ export function InlineImageGallery({ text }: Props) {
                 }}
               />
               <div className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-all group-hover:bg-black/20 group-hover:opacity-100">
-                <span className="material-symbols-outlined rounded-full bg-white/90 p-2 text-[20px] text-[var(--color-text-primary)] shadow-lg">
-                  fullscreen
+                <span className="rounded-full bg-white/90 p-2 text-[var(--color-text-primary)] shadow-lg">
+                  <Maximize2 size={18} strokeWidth={1.35} />
                 </span>
               </div>
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-2.5 pb-2 pt-6">

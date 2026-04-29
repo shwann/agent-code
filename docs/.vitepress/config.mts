@@ -89,6 +89,7 @@ const zhSidebar = [
       { text: '架构设计', link: '/desktop/02-architecture' },
       { text: '功能详解', link: '/desktop/03-features' },
       { text: '安装与构建', link: '/desktop/04-installation' },
+      { text: '桌面端打包', link: '/desktop/06-build-package' },
     ],
   },
   {

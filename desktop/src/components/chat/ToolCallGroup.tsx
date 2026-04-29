@@ -1,4 +1,12 @@
 import { useEffect, useState } from 'react'
+import {
+  Bot,
+  CheckCircle2,
+  ChevronDown,
+  CircleAlert,
+  CircleDot,
+  CircleStop,
+} from 'lucide-react'
 import { ToolCallBlock } from './ToolCallBlock'
 import { MarkdownRenderer } from '../markdown/MarkdownRenderer'
 import { Modal } from '../shared/Modal'
@@ -134,9 +142,11 @@ function AgentToolGroup({
         onClick={() => setExpanded((value) => !value)}
         className="flex w-full items-center gap-2 rounded-lg border border-[var(--color-border)]/40 bg-[var(--color-surface-container-low)] px-3 py-1.5 text-left transition-colors hover:bg-[var(--color-surface-container-high)]"
       >
-        <span className="material-symbols-outlined text-[14px] text-[var(--color-outline)]">
-          {expanded ? 'expand_less' : 'expand_more'}
-        </span>
+        <ChevronDown
+          size={14}
+          strokeWidth={1.25}
+          className={`text-[var(--color-outline)] transition-transform ${expanded ? 'rotate-180' : ''}`}
+        />
         <span className="flex-1 truncate text-[12px] text-[var(--color-text-secondary)]">
           {toolCalls.length === 1 ? t('toolGroup.agentOne') : t('toolGroup.agentMany', { count: toolCalls.length })}
         </span>
@@ -146,16 +156,16 @@ function AgentToolGroup({
           </span>
         )}
         {!isAnyRunning && errorPresent && (
-          <span className="material-symbols-outlined text-[14px] text-[var(--color-error)]">error</span>
+          <CircleAlert size={14} strokeWidth={1.35} className="text-[var(--color-error)]" />
         )}
         {!isAnyRunning && !errorPresent && allComplete && (
-          <span className="material-symbols-outlined text-[14px] text-[var(--color-success)]">check_circle</span>
+          <CheckCircle2 size={14} strokeWidth={1.35} className="text-[var(--color-success)]" />
         )}
         {!isAnyRunning && !errorPresent && !allComplete && !anyStopped && (
-          <span className="material-symbols-outlined text-[14px] text-[var(--color-outline)]">pending</span>
+          <CircleDot size={14} strokeWidth={1.35} className="text-[var(--color-outline)]" />
         )}
         {!isAnyRunning && !errorPresent && !allComplete && anyStopped && (
-          <span className="material-symbols-outlined text-[14px] text-[var(--color-outline)]">stop_circle</span>
+          <CircleStop size={14} strokeWidth={1.35} className="text-[var(--color-outline)]" />
         )}
       </button>
 
@@ -207,20 +217,22 @@ function ToolCallGroupMulti({ toolCalls, resultMap, childToolCallsByParent, isSt
         onClick={() => setExpanded((v) => !v)}
         className="flex w-full items-center gap-2 rounded-lg border border-[var(--color-border)]/40 bg-[var(--color-surface-container-low)] px-3 py-1.5 text-left transition-colors hover:bg-[var(--color-surface-container-high)]"
       >
-        <span className="material-symbols-outlined text-[14px] text-[var(--color-outline)]">
-          {expanded ? 'expand_less' : 'expand_more'}
-        </span>
+        <ChevronDown
+          size={14}
+          strokeWidth={1.25}
+          className={`text-[var(--color-outline)] transition-transform ${expanded ? 'rotate-180' : ''}`}
+        />
         <span className="flex-1 truncate text-[12px] text-[var(--color-text-secondary)]">
           {summary}
         </span>
         {!isStreaming && allComplete && !errorPresent && (
-          <span className="material-symbols-outlined text-[14px] text-[var(--color-success)]">check_circle</span>
+          <CheckCircle2 size={14} strokeWidth={1.35} className="text-[var(--color-success)]" />
         )}
         {!isStreaming && errorPresent && (
-          <span className="material-symbols-outlined text-[14px] text-[var(--color-error)]">error</span>
+          <CircleAlert size={14} strokeWidth={1.35} className="text-[var(--color-error)]" />
         )}
         {!isStreaming && !allComplete && !errorPresent && (
-          <span className="material-symbols-outlined text-[14px] text-[var(--color-outline)]">pending</span>
+          <CircleDot size={14} strokeWidth={1.35} className="text-[var(--color-outline)]" />
         )}
         {isStreaming && (
           <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-brand)] animate-pulse-dot" />
@@ -297,7 +309,7 @@ function AgentCallCard({
   return (
     <div className="overflow-hidden rounded-lg border border-[var(--color-border)]/50 bg-[var(--color-surface-container-lowest)]">
       <div className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-[var(--color-surface-hover)]/50">
-        <span className="material-symbols-outlined text-[18px] text-[var(--color-outline)]">smart_toy</span>
+        <Bot size={17} strokeWidth={1.35} className="shrink-0 text-[var(--color-outline)]" />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className="text-[13px] font-semibold text-[var(--color-text-primary)]">Agent</span>
@@ -351,9 +363,11 @@ function AgentCallCard({
           className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[var(--color-outline)] transition-colors hover:bg-[var(--color-surface-hover)]"
           aria-label={expanded ? 'Collapse agent' : 'Expand agent'}
         >
-          <span className="material-symbols-outlined text-[16px]">
-          {expanded ? 'expand_less' : 'expand_more'}
-          </span>
+          <ChevronDown
+            size={15}
+            strokeWidth={1.25}
+            className={`transition-transform ${expanded ? 'rotate-180' : ''}`}
+          />
         </button>
       </div>
 

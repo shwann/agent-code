@@ -1,4 +1,24 @@
 import { useState } from 'react'
+import {
+  BadgeCheck,
+  Bot,
+  Check,
+  ChevronDown,
+  CloudDownload,
+  FileCode2,
+  FileSearch,
+  FileText,
+  FolderOpen,
+  Globe2,
+  NotebookPen,
+  PencilLine,
+  Search,
+  Shield,
+  Sparkles,
+  Terminal,
+  X,
+} from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { useChatStore } from '../../stores/chatStore'
 import { useTabStore } from '../../stores/tabStore'
 import { useTranslation } from '../../i18n'
@@ -13,22 +33,18 @@ type Props = {
   description?: string
 }
 
-/**
- * Icons for known tool types.
- * Uses Material Symbols Outlined names.
- */
-const TOOL_META: Record<string, { icon: string; label: string; color: string }> = {
-  Bash: { icon: 'terminal', label: 'Bash', color: 'var(--color-warning)' },
-  Edit: { icon: 'edit_note', label: 'Edit File', color: 'var(--color-brand)' },
-  Write: { icon: 'edit_document', label: 'Write File', color: 'var(--color-success)' },
-  Read: { icon: 'description', label: 'Read File', color: 'var(--color-secondary)' },
-  Glob: { icon: 'search', label: 'Glob Search', color: 'var(--color-secondary)' },
-  Grep: { icon: 'find_in_page', label: 'Grep Search', color: 'var(--color-secondary)' },
-  Agent: { icon: 'smart_toy', label: 'Agent', color: 'var(--color-tertiary)' },
-  WebSearch: { icon: 'travel_explore', label: 'Web Search', color: 'var(--color-secondary)' },
-  WebFetch: { icon: 'cloud_download', label: 'Web Fetch', color: 'var(--color-secondary)' },
-  NotebookEdit: { icon: 'note', label: 'Notebook Edit', color: 'var(--color-brand)' },
-  Skill: { icon: 'auto_awesome', label: 'Skill', color: 'var(--color-tertiary)' },
+const TOOL_META: Record<string, { Icon: LucideIcon; label: string; color: string }> = {
+  Bash: { Icon: Terminal, label: 'Bash', color: 'var(--color-warning)' },
+  Edit: { Icon: PencilLine, label: 'Edit File', color: 'var(--color-brand)' },
+  Write: { Icon: FileCode2, label: 'Write File', color: 'var(--color-success)' },
+  Read: { Icon: FileText, label: 'Read File', color: 'var(--color-secondary)' },
+  Glob: { Icon: Search, label: 'Glob Search', color: 'var(--color-secondary)' },
+  Grep: { Icon: FileSearch, label: 'Grep Search', color: 'var(--color-secondary)' },
+  Agent: { Icon: Bot, label: 'Agent', color: 'var(--color-tertiary)' },
+  WebSearch: { Icon: Globe2, label: 'Web Search', color: 'var(--color-secondary)' },
+  WebFetch: { Icon: CloudDownload, label: 'Web Fetch', color: 'var(--color-secondary)' },
+  NotebookEdit: { Icon: NotebookPen, label: 'Notebook Edit', color: 'var(--color-brand)' },
+  Skill: { Icon: Sparkles, label: 'Skill', color: 'var(--color-tertiary)' },
 }
 
 /**
@@ -119,7 +135,8 @@ export function PermissionDialog({ requestId, toolName, input, description }: Pr
   const isPending = pendingPermission?.requestId === requestId
   const [showRaw, setShowRaw] = useState(false)
 
-  const meta = TOOL_META[toolName] || { icon: 'shield', label: toolName, color: 'var(--color-text-tertiary)' }
+  const meta = TOOL_META[toolName] || { Icon: Shield, label: toolName, color: 'var(--color-text-tertiary)' }
+  const MetaIcon = meta.Icon
   const details = extractToolDetails(toolName, input, t)
   const rawInput = typeof input === 'string' ? input : JSON.stringify(input, null, 2)
   const preview = renderPermissionPreview(toolName, input)
@@ -139,15 +156,10 @@ export function PermissionDialog({ requestId, toolName, input, description }: Pr
           : 'bg-[var(--color-surface-container-low)]'
       }`}>
         <div
-          className="flex items-center justify-center w-8 h-8 rounded-[var(--radius-md)]"
-          style={{ backgroundColor: `${meta.color}18` }}
+          className="flex h-8 w-8 items-center justify-center"
+          style={{ color: meta.color }}
         >
-          <span
-            className="material-symbols-outlined text-[18px]"
-            style={{ color: meta.color }}
-          >
-            {meta.icon}
-          </span>
+          <MetaIcon size={18} strokeWidth={1.3} />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
@@ -178,9 +190,7 @@ export function PermissionDialog({ requestId, toolName, input, description }: Pr
           <div className="space-y-2">
             {details.primary && toolName !== 'Bash' ? (
               <div className="flex items-center gap-2 rounded-[var(--radius-md)] bg-[var(--color-surface-container)] px-3 py-2 text-xs font-[var(--font-mono)] text-[var(--color-text-secondary)]">
-                <span className="material-symbols-outlined text-[14px] text-[var(--color-outline)] flex-shrink-0">
-                  folder_open
-                </span>
+                <FolderOpen size={14} strokeWidth={1.3} className="shrink-0 text-[var(--color-outline)]" />
                 <span className="truncate">{details.primary}</span>
               </div>
             ) : null}
@@ -189,9 +199,9 @@ export function PermissionDialog({ requestId, toolName, input, description }: Pr
         ) : details.primary ? (
           <div className="mb-2">
             <div className="flex items-center gap-2 rounded-[var(--radius-md)] bg-[var(--color-surface-container)] px-3 py-2 text-xs font-[var(--font-mono)] text-[var(--color-text-secondary)]">
-              <span className="material-symbols-outlined text-[14px] text-[var(--color-outline)] flex-shrink-0">
-                {toolName === 'Glob' || toolName === 'Grep' ? 'search' : 'folder_open'}
-              </span>
+              {toolName === 'Glob' || toolName === 'Grep'
+                ? <Search size={14} strokeWidth={1.3} className="shrink-0 text-[var(--color-outline)]" />
+                : <FolderOpen size={14} strokeWidth={1.3} className="shrink-0 text-[var(--color-outline)]" />}
               <span className="truncate">{details.primary}</span>
             </div>
           </div>
@@ -207,9 +217,11 @@ export function PermissionDialog({ requestId, toolName, input, description }: Pr
             onClick={() => setShowRaw(!showRaw)}
             className="mt-2 flex cursor-pointer items-center gap-1 text-[11px] text-[var(--color-text-accent)] hover:underline"
           >
-            <span className="material-symbols-outlined text-[14px]">
-              {showRaw ? 'expand_less' : 'expand_more'}
-            </span>
+            <ChevronDown
+              size={14}
+              strokeWidth={1.35}
+              className={`transition-transform ${showRaw ? 'rotate-180' : ''}`}
+            />
             {showRaw ? t('permission.hideDetails') : t('permission.showFullInput')}
           </button>
         )}
@@ -229,7 +241,7 @@ export function PermissionDialog({ requestId, toolName, input, description }: Pr
             size="sm"
             onClick={() => activeTabId && respondToPermission(activeTabId, requestId, true)}
             icon={
-              <span className="material-symbols-outlined text-[14px]">check</span>
+              <Check size={14} strokeWidth={1.5} />
             }
           >
             {t('permission.allow')}
@@ -239,7 +251,7 @@ export function PermissionDialog({ requestId, toolName, input, description }: Pr
             size="sm"
             onClick={() => activeTabId && respondToPermission(activeTabId, requestId, true, { rule: 'always' })}
             icon={
-              <span className="material-symbols-outlined text-[14px]">verified</span>
+              <BadgeCheck size={14} strokeWidth={1.5} />
             }
           >
             {t('permission.allowForSession')}
@@ -250,7 +262,7 @@ export function PermissionDialog({ requestId, toolName, input, description }: Pr
             size="sm"
             onClick={() => activeTabId && respondToPermission(activeTabId, requestId, false)}
             icon={
-              <span className="material-symbols-outlined text-[14px]">close</span>
+              <X size={14} strokeWidth={1.5} />
             }
           >
             {t('permission.deny')}

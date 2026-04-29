@@ -801,6 +801,21 @@ export const en = {
   'fileSearch.attach': 'attach',
   'fileSearch.close': 'close',
 
+  // ─── Chat Workspace ──────────────────────────────────────
+  'workspace.files': 'Files',
+  'workspace.terminal': 'Terminal',
+  'workspace.close': 'Close panel',
+  'workspace.noWorkspace': 'No workspace',
+  'workspace.noWorkspaceBody': 'This session does not have a project directory to browse.',
+  'workspace.filesLoadFailed': 'Failed to load files',
+  'workspace.emptyDir': 'This folder is empty',
+  'workspace.previewTitle': 'Select a file',
+  'workspace.previewHint': 'Open a file from the tree to preview it here.',
+  'workspace.previewFailed': 'Failed to preview file',
+  'workspace.previewUnavailable': 'Preview unavailable',
+  'workspace.expandPreview': 'Expand preview',
+  'workspace.restorePreview': 'Restore preview',
+
   // ─── Teams ──────────────────────────────────────
   'teams.backToLeader': '\u2190 Back to Leader',
   'teams.viewing': 'Viewing:',

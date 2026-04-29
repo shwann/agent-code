@@ -1,4 +1,21 @@
 import { useMemo, useState } from 'react'
+import {
+  Bot,
+  ChevronDown,
+  CircleAlert,
+  CloudDownload,
+  FileCode2,
+  FileSearch,
+  FileText,
+  Globe2,
+  NotebookPen,
+  PencilLine,
+  Search,
+  Sparkles,
+  Terminal,
+  Wrench,
+} from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { CodeViewer } from './CodeViewer'
 import { DiffViewer } from './DiffViewer'
 import { TerminalChrome } from './TerminalChrome'
@@ -16,25 +33,25 @@ type Props = {
   compact?: boolean
 }
 
-const TOOL_ICONS: Record<string, string> = {
-  Bash: 'terminal',
-  Read: 'description',
-  Write: 'edit_document',
-  Edit: 'edit_note',
-  Glob: 'search',
-  Grep: 'find_in_page',
-  Agent: 'smart_toy',
-  WebSearch: 'travel_explore',
-  WebFetch: 'cloud_download',
-  NotebookEdit: 'note',
-  Skill: 'auto_awesome',
+const TOOL_ICONS: Record<string, LucideIcon> = {
+  Bash: Terminal,
+  Read: FileText,
+  Write: FileCode2,
+  Edit: PencilLine,
+  Glob: Search,
+  Grep: FileSearch,
+  Agent: Bot,
+  WebSearch: Globe2,
+  WebFetch: CloudDownload,
+  NotebookEdit: NotebookPen,
+  Skill: Sparkles,
 }
 
 export function ToolCallBlock({ toolName, input, result, compact = false }: Props) {
   const [expanded, setExpanded] = useState(false)
   const t = useTranslation()
   const obj = input && typeof input === 'object' ? (input as Record<string, unknown>) : {}
-  const icon = TOOL_ICONS[toolName] || 'build'
+  const ToolIcon = TOOL_ICONS[toolName] || Wrench
   const filePath = typeof obj.file_path === 'string' ? obj.file_path : ''
   const summary = getToolSummary(toolName, obj, t)
   const outputSummary = getToolResultSummary(
@@ -62,7 +79,7 @@ export function ToolCallBlock({ toolName, input, result, compact = false }: Prop
         }}
         className="flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-[var(--color-surface-hover)]/50"
       >
-        <span className="material-symbols-outlined text-[14px] text-[var(--color-outline)]">{icon}</span>
+        <ToolIcon size={14} strokeWidth={1.3} className="shrink-0 text-[var(--color-outline)]" />
         <span className="text-[11px] font-semibold text-[var(--color-text-secondary)]">
           {toolName}
         </span>
@@ -89,12 +106,14 @@ export function ToolCallBlock({ toolName, input, result, compact = false }: Prop
           </span>
         )}
         {result?.isError && (
-          <span className="material-symbols-outlined shrink-0 text-[14px] text-[var(--color-error)]">error</span>
+          <CircleAlert size={14} strokeWidth={1.35} className="shrink-0 text-[var(--color-error)]" />
         )}
         {expandable && (
-          <span className="material-symbols-outlined text-[14px] text-[var(--color-outline)]">
-            {expanded ? 'expand_less' : 'expand_more'}
-          </span>
+          <ChevronDown
+            size={14}
+            strokeWidth={1.25}
+            className={`text-[var(--color-outline)] transition-transform ${expanded ? 'rotate-180' : ''}`}
+          />
         )}
       </button>
 

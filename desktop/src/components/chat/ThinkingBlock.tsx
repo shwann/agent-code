@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { ChevronRight } from 'lucide-react'
 import { useTranslation } from '../../i18n'
 
 export function ThinkingBlock({ content, isActive = false }: { content: string; isActive?: boolean }) {
@@ -24,9 +25,11 @@ export function ThinkingBlock({ content, isActive = false }: { content: string; 
         onClick={() => setExpanded((v) => !v)}
         className="flex w-full items-center gap-1.5 rounded-md px-1 py-0.5 text-left text-[12px] text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)]"
       >
-        <span className="text-[10px] text-[var(--color-outline)]">
-          {expanded ? '\u25BE' : '\u25B8'}
-        </span>
+        <ChevronRight
+          size={13}
+          strokeWidth={1.25}
+          className={`shrink-0 text-[var(--color-outline)] transition-transform ${expanded ? 'rotate-90' : ''}`}
+        />
         <span className="shrink-0 font-medium italic">
           {t('thinking.label')}
           {isActive && <span className="thinking-dots" />}

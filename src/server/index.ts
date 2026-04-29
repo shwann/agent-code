@@ -58,9 +58,11 @@ export function startServer(port = PORT, host = HOST) {
    * - Production / non-localhost (e.g. 0.0.0.0): auth enforced automatically.
    * - Explicit opt-in: SERVER_AUTH_REQUIRED=1 forces auth even on localhost.
    */
+  const hasServerAuthToken = Boolean(process.env.SERVER_AUTH_TOKEN?.trim())
   const authRequired =
     SERVER_OPTIONS.authRequired ||
     process.env.SERVER_AUTH_REQUIRED === '1' ||
+    hasServerAuthToken ||
     host !== '127.0.0.1'
 
   const server = Bun.serve<WebSocketData>({

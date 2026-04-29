@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
+import { CircleAlert, GitBranch, LoaderCircle, Maximize2, Minus, Plus } from 'lucide-react'
 import DOMPurify from 'dompurify'
 import mermaid from 'mermaid'
 import { Modal } from '../shared/Modal'
@@ -231,7 +232,7 @@ export function MermaidRenderer({ code }: Props) {
     return (
       <div className="my-4 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-error)]/30">
         <div className="flex items-center gap-2 border-b border-[var(--color-error)]/20 bg-[var(--color-error-container)] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-error)]">
-          <span className="material-symbols-outlined text-[14px]">error</span>
+          <CircleAlert size={14} strokeWidth={1.35} />
           Mermaid Error
         </div>
         <div className="bg-[var(--color-error-container)]/30 px-3 py-2 font-[var(--font-mono)] text-[11px] text-[var(--color-error)]">
@@ -245,7 +246,7 @@ export function MermaidRenderer({ code }: Props) {
     return (
       <div className="my-4 flex items-center justify-center rounded-[var(--radius-lg)] border border-[var(--color-border)]/50 bg-[var(--color-surface-container-low)] py-8">
         <div className="flex items-center gap-2 text-[11px] text-[var(--color-text-tertiary)]">
-          <span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span>
+          <LoaderCircle size={16} strokeWidth={1.35} className="animate-spin" />
           Rendering diagram...
         </div>
       </div>
@@ -258,7 +259,7 @@ export function MermaidRenderer({ code }: Props) {
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[var(--color-outline-variant)]/40 bg-[var(--color-surface-container)] px-3 py-1.5 text-[11px] text-[var(--color-text-tertiary)]">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[14px]">account_tree</span>
+            <GitBranch size={14} strokeWidth={1.3} />
             <span className="font-semibold uppercase tracking-[0.14em]">Mermaid</span>
           </div>
           <div className="flex items-center gap-1.5">
@@ -266,7 +267,7 @@ export function MermaidRenderer({ code }: Props) {
               onClick={handlePreview}
               className="flex items-center gap-1 rounded-md border border-[var(--color-outline-variant)]/40 bg-[var(--color-surface-container-lowest)] px-2 py-1 text-[11px] text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-surface-container-high)] hover:text-[var(--color-text-primary)]"
             >
-              <span className="material-symbols-outlined text-[12px]">fullscreen</span>
+              <Maximize2 size={12} strokeWidth={1.35} />
               Preview
             </button>
             <CopyButton
@@ -291,7 +292,7 @@ export function MermaidRenderer({ code }: Props) {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm font-semibold text-[var(--color-text-primary)]">
-              <span className="material-symbols-outlined text-[18px]">account_tree</span>
+              <GitBranch size={18} strokeWidth={1.3} />
               Mermaid Diagram
             </div>
             <div className="flex items-center gap-2">
@@ -302,7 +303,7 @@ export function MermaidRenderer({ code }: Props) {
                   aria-label="Zoom out"
                   className="flex h-8 w-8 items-center justify-center rounded-md text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)]"
                 >
-                  <span className="material-symbols-outlined text-[16px]">remove</span>
+                  <Minus size={16} strokeWidth={1.35} />
                 </button>
                 <button
                   type="button"
@@ -317,7 +318,7 @@ export function MermaidRenderer({ code }: Props) {
                   aria-label="Zoom in"
                   className="flex h-8 w-8 items-center justify-center rounded-md text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)]"
                 >
-                  <span className="material-symbols-outlined text-[16px]">add</span>
+                  <Plus size={16} strokeWidth={1.35} />
                 </button>
               </div>
               <CopyButton

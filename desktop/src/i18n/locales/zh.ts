@@ -803,6 +803,21 @@ export const zh: Record<TranslationKey, string> = {
   'fileSearch.attach': '附加',
   'fileSearch.close': '关闭',
 
+  // ─── Chat Workspace ──────────────────────────────────────
+  'workspace.files': '文件',
+  'workspace.terminal': '终端',
+  'workspace.close': '关闭面板',
+  'workspace.noWorkspace': '暂无工作区',
+  'workspace.noWorkspaceBody': '当前会话没有可浏览的项目目录。',
+  'workspace.filesLoadFailed': '文件加载失败',
+  'workspace.emptyDir': '此文件夹为空',
+  'workspace.previewTitle': '选择文件',
+  'workspace.previewHint': '从文件树打开文件后会在这里预览。',
+  'workspace.previewFailed': '文件预览失败',
+  'workspace.previewUnavailable': '无法预览',
+  'workspace.expandPreview': '全屏预览',
+  'workspace.restorePreview': '还原预览',
+
   // ─── Teams ──────────────────────────────────────
   'teams.backToLeader': '\u2190 返回主控',
   'teams.viewing': '查看:',

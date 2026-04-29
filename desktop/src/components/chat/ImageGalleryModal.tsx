@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Modal } from '../shared/Modal'
 
 type GalleryImage = {
@@ -51,14 +52,14 @@ export function ImageGalleryModal({ open, images, activeIndex, onClose, onSelect
                 className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface-hover)]"
                 aria-label="Previous image"
               >
-                <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+                <ChevronLeft size={18} strokeWidth={1.35} />
               </button>
               <button
                 onClick={() => onSelect((activeIndex + 1) % images.length)}
                 className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface-hover)]"
                 aria-label="Next image"
               >
-                <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+                <ChevronRight size={18} strokeWidth={1.35} />
               </button>
             </div>
           )}

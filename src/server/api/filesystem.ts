@@ -6,6 +6,7 @@
 import * as path from 'path'
 import * as fs from 'fs'
 import * as os from 'os'
+import { sessionService } from '../services/sessionService.js'
 
 const IMAGE_MIME_TYPES: Record<string, string> = {
   '.png': 'image/png',
@@ -19,24 +20,47 @@ const IMAGE_MIME_TYPES: Record<string, string> = {
   '.avif': 'image/avif',
 }
 
+const TEXT_PREVIEW_MAX_BYTES = 1024 * 1024
+
 function isWithinRoot(targetPath: string, rootPath: string): boolean {
   return targetPath === rootPath || targetPath.startsWith(`${rootPath}${path.sep}`)
 }
 
-function isAllowedFilesystemPath(targetPath: string): boolean {
+async function getAllowedFilesystemRoots(sessionId?: string): Promise<string[]> {
+  const roots = [
+    os.homedir(),
+    '/tmp',
+    process.env.AGENT_CODE_WORKSPACE_DIR,
+  ]
+
+  if (sessionId) {
+    const sessionWorkDir = await sessionService.getSessionWorkDir(sessionId)
+    if (sessionWorkDir) roots.push(sessionWorkDir)
+  }
+
+  return roots
+    .filter((root): root is string => !!root && path.resolve(root) !== path.parse(path.resolve(root)).root)
+    .map((root) => toComparableFilesystemPath(root))
+}
+
+function toComparableFilesystemPath(targetPath: string): string {
   const resolvedPath = path.resolve(targetPath)
-  const homeDir = path.resolve(os.homedir())
+  try {
+    return fs.realpathSync(resolvedPath)
+  } catch {
+    return resolvedPath
+  }
+}
 
-  if (isWithinRoot(resolvedPath, homeDir) || isWithinRoot(resolvedPath, '/tmp')) {
-    return true
+async function getAuthorizedFilesystemPath(targetPath: string, sessionId?: string): Promise<string | null> {
+  const comparablePath = toComparableFilesystemPath(targetPath)
+  const allowedRoots = await getAllowedFilesystemRoots(sessionId)
+
+  if (allowedRoots.some((root) => isWithinRoot(comparablePath, root))) {
+    return comparablePath
   }
 
-  // macOS reports /tmp as /private/tmp via native folder pickers and realpath().
-  if (process.platform === 'darwin' && isWithinRoot(resolvedPath, '/private/tmp')) {
-    return true
-  }
-
-  return false
+  return null
 }
 
 export async function handleFilesystemRoute(pathname: string, url: URL): Promise<Response> {
@@ -48,18 +72,63 @@ export async function handleFilesystemRoute(pathname: string, url: URL): Promise
     return handleServeFile(url)
   }
 
+  if (pathname === '/api/filesystem/read') {
+    return handleReadFile(url)
+  }
+
   return new Response(JSON.stringify({ error: 'Not found' }), { status: 404 })
 }
 
-async function handleServeFile(url: URL): Promise<Response> {
+async function handleReadFile(url: URL): Promise<Response> {
   const filePath = url.searchParams.get('path')
+  const sessionId = url.searchParams.get('sessionId') || undefined
   if (!filePath) {
     return json({ error: 'Missing path parameter' }, 400)
   }
 
   const resolvedPath = path.resolve(filePath)
+  const authorizedPath = await getAuthorizedFilesystemPath(resolvedPath, sessionId)
 
-  if (!isAllowedFilesystemPath(resolvedPath)) {
+  if (!authorizedPath) {
+    return json({ error: 'Access denied: path outside allowed directory' }, 403)
+  }
+
+  try {
+    const stat = fs.statSync(authorizedPath)
+    if (!stat.isFile()) {
+      return json({ error: 'Not a file' }, 400)
+    }
+    if (stat.size > TEXT_PREVIEW_MAX_BYTES) {
+      return json({ error: 'File too large to preview', size: stat.size }, 400)
+    }
+
+    const buffer = fs.readFileSync(authorizedPath)
+    if (buffer.includes(0)) {
+      return json({ error: 'Binary file preview is not supported', size: stat.size }, 400)
+    }
+
+    return json({
+      path: resolvedPath,
+      name: path.basename(resolvedPath),
+      size: stat.size,
+      content: buffer.toString('utf-8'),
+    })
+  } catch {
+    return json({ error: 'File not found' }, 404)
+  }
+}
+
+async function handleServeFile(url: URL): Promise<Response> {
+  const filePath = url.searchParams.get('path')
+  const sessionId = url.searchParams.get('sessionId') || undefined
+  if (!filePath) {
+    return json({ error: 'Missing path parameter' }, 400)
+  }
+
+  const resolvedPath = path.resolve(filePath)
+  const authorizedPath = await getAuthorizedFilesystemPath(resolvedPath, sessionId)
+
+  if (!authorizedPath) {
     return json({ error: 'Access denied: path outside allowed directory' }, 403)
   }
 
@@ -71,7 +140,7 @@ async function handleServeFile(url: URL): Promise<Response> {
   }
 
   try {
-    const stat = fs.statSync(resolvedPath)
+    const stat = fs.statSync(authorizedPath)
     if (!stat.isFile()) {
       return json({ error: 'Not a file' }, 400)
     }
@@ -80,7 +149,7 @@ async function handleServeFile(url: URL): Promise<Response> {
       return json({ error: 'File too large' }, 400)
     }
 
-    const data = fs.readFileSync(resolvedPath)
+    const data = fs.readFileSync(authorizedPath)
     return new Response(data, {
       status: 200,
       headers: {
@@ -96,9 +165,11 @@ async function handleServeFile(url: URL): Promise<Response> {
 
 async function handleBrowse(url: URL): Promise<Response> {
   const targetPath = url.searchParams.get('path') || process.env.HOME || '/'
+  const sessionId = url.searchParams.get('sessionId') || undefined
   const resolvedPath = path.resolve(targetPath)
+  const authorizedPath = await getAuthorizedFilesystemPath(resolvedPath, sessionId)
 
-  if (!isAllowedFilesystemPath(resolvedPath)) {
+  if (!authorizedPath) {
     return json({ error: 'Access denied: path outside allowed directory' }, 403)
   }
 
@@ -107,12 +178,12 @@ async function handleBrowse(url: URL): Promise<Response> {
   const maxResults = Math.min(parseInt(url.searchParams.get('maxResults') || '200', 10), 200)
 
   try {
-    const stat = fs.statSync(resolvedPath)
+    const stat = fs.statSync(authorizedPath)
     if (!stat.isDirectory()) {
       return json({ error: 'Not a directory', path: resolvedPath }, 400)
     }
 
-    const entries = fs.readdirSync(resolvedPath, { withFileTypes: true })
+    const entries = fs.readdirSync(authorizedPath, { withFileTypes: true })
 
     if (searchQuery) {
       // Search mode: filter by filename, include both dirs and files

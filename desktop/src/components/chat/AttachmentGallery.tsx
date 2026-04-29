@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Paperclip, X } from 'lucide-react'
 import { ImageGalleryModal } from './ImageGalleryModal'
 
 export type AttachmentPreview = {
@@ -82,7 +83,7 @@ export function AttachmentGallery({ attachments, variant = 'message', onRemove }
               key={attachment.id || `${attachment.name}-${index}`}
               className="flex items-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-3 py-2 text-xs text-[var(--color-text-secondary)]"
             >
-              <span className="material-symbols-outlined text-[14px]">attach_file</span>
+              <Paperclip size={14} strokeWidth={1.35} />
               <span className="max-w-[220px] truncate">{attachment.name}</span>
               {onRemove && attachment.id && (
                 <button
@@ -91,7 +92,7 @@ export function AttachmentGallery({ attachments, variant = 'message', onRemove }
                   className="ml-1 text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-error)]"
                   aria-label={`Remove ${attachment.name}`}
                 >
-                  <span className="material-symbols-outlined text-[14px]">close</span>
+                  <X size={14} strokeWidth={1.45} />
                 </button>
               )}
             </div>

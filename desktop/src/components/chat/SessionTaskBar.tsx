@@ -1,20 +1,30 @@
+import {
+  CheckCircle2,
+  ChevronDown,
+  Circle,
+  Clock3,
+  ListChecks,
+  LoaderCircle,
+  User,
+  X,
+} from 'lucide-react'
 import { useCLITaskStore } from '../../stores/cliTaskStore'
 import { useTranslation } from '../../i18n'
 import type { CLITask } from '../../types/cliTask'
 
 const statusConfig = {
   pending: {
-    icon: 'radio_button_unchecked',
+    Icon: Circle,
     color: 'var(--color-text-tertiary)',
     label: 'pending',
   },
   in_progress: {
-    icon: 'pending',
+    Icon: LoaderCircle,
     color: 'var(--color-warning)',
     label: 'active',
   },
   completed: {
-    icon: 'check_circle',
+    Icon: CheckCircle2,
     color: 'var(--color-success)',
     label: 'done',
   },
@@ -50,12 +60,8 @@ export function SessionTaskBar() {
             onClick={toggleExpanded}
             className="flex min-w-0 flex-1 items-center gap-3 rounded-[var(--radius-md)] px-2 py-1 hover:bg-[var(--color-surface-container-low)] transition-colors"
           >
-            <div className="flex items-center justify-center w-6 h-6 rounded-[var(--radius-md)] bg-[var(--color-secondary)]/10">
-              <span
-                className="material-symbols-outlined text-[14px] text-[var(--color-secondary)]"
-              >
-                checklist
-              </span>
+            <div className="flex h-6 w-6 items-center justify-center text-[var(--color-secondary)]">
+              <ListChecks size={16} strokeWidth={1.25} />
             </div>
 
             <span className="text-xs font-semibold text-[var(--color-text-primary)]">
@@ -79,12 +85,12 @@ export function SessionTaskBar() {
               {completedCount}/{totalCount}
             </span>
 
-            <span
-              className="material-symbols-outlined text-[14px] text-[var(--color-text-tertiary)] transition-transform duration-200"
+            <ChevronDown
+              size={15}
+              strokeWidth={1.25}
+              className="text-[var(--color-text-tertiary)] transition-transform duration-200"
               style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
-            >
-              expand_less
-            </span>
+            />
           </button>
 
           {allCompleted && (
@@ -94,7 +100,7 @@ export function SessionTaskBar() {
               onClick={() => { void resetCompletedTasks() }}
               className="flex shrink-0 items-center justify-center rounded-[var(--radius-md)] p-1.5 text-[var(--color-text-tertiary)] hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-text-primary)] transition-colors"
             >
-              <span className="material-symbols-outlined text-[16px]">close</span>
+              <X size={15} strokeWidth={1.35} />
             </button>
           )}
         </div>
@@ -114,15 +120,16 @@ export function SessionTaskBar() {
 
 function TaskItem({ task }: { task: CLITask }) {
   const config = statusConfig[task.status]
+  const Icon = config.Icon
 
   return (
     <div className="flex items-start gap-2 py-1.5 px-1 rounded-md">
-      <span
-        className="material-symbols-outlined text-[16px] mt-px shrink-0"
-        style={{ color: config.color, fontVariationSettings: "'FILL' 1" }}
-      >
-        {config.icon}
-      </span>
+      <Icon
+        size={15}
+        strokeWidth={1.35}
+        className={task.status === 'in_progress' ? 'mt-px shrink-0 animate-spin' : 'mt-px shrink-0'}
+        style={{ color: config.color }}
+      />
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5">
@@ -140,7 +147,7 @@ function TaskItem({ task }: { task: CLITask }) {
 
         {task.status === 'in_progress' && task.activeForm && (
           <div className="flex items-center gap-1 mt-0.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-warning)] animate-pulse" />
+            <Clock3 size={10} strokeWidth={1.35} className="text-[var(--color-warning)]" />
             <span className="text-[10px] text-[var(--color-warning)]">
               {task.activeForm}
             </span>
@@ -149,7 +156,7 @@ function TaskItem({ task }: { task: CLITask }) {
 
         {task.owner && (
           <span className="text-[10px] text-[var(--color-text-tertiary)] mt-0.5 inline-flex items-center gap-0.5">
-            <span className="material-symbols-outlined text-[10px]">person</span>
+            <User size={10} strokeWidth={1.35} />
             {task.owner}
           </span>
         )}

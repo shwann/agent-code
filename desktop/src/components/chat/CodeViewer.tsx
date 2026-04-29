@@ -8,6 +8,7 @@ type Props = {
   language?: string
   maxLines?: number
   showLineNumbers?: boolean
+  fill?: boolean
 }
 
 /**
@@ -54,7 +55,17 @@ const shikiEngine = createJavaScriptRegexEngine({ forgiving: true })
  * is never empty while the async WASM / language-grammar load is in-flight,
  * or if highlighting fails entirely.
  */
-function CodeArea({ code, language, showLineNumbers }: { code: string; language?: string; showLineNumbers: boolean }) {
+function CodeArea({
+  code,
+  language,
+  showLineNumbers,
+  fill,
+}: {
+  code: string
+  language?: string
+  showLineNumbers: boolean
+  fill: boolean
+}) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [loaded, setLoaded] = useState(false)
 
@@ -64,6 +75,7 @@ function CodeArea({ code, language, showLineNumbers }: { code: string; language?
     // the plain-text fallback as soon as highlighted output is in the DOM.
     const el = containerRef.current
     if (!el) return
+    setLoaded(false)
     const check = () => {
       const shikiContainer = el.querySelector('[data-testid="shiki-container"]')
       // shiki renders a <code> element inside its container once highlighting is done
@@ -81,7 +93,9 @@ function CodeArea({ code, language, showLineNumbers }: { code: string; language?
     <div
       ref={containerRef}
       data-has-line-numbers={showLineNumbers ? 'true' : 'false'}
-      className="code-viewer-area relative max-h-[420px] overflow-auto bg-[var(--color-code-bg)]"
+      className={`code-viewer-area relative overflow-auto bg-[var(--color-code-bg)] ${
+        fill ? 'min-h-0 flex-1' : 'max-h-[420px]'
+      }`}
     >
       {/* Plain-text fallback shown until Shiki finishes highlighting */}
       {!loaded && (
@@ -135,7 +149,7 @@ function CodeArea({ code, language, showLineNumbers }: { code: string; language?
   )
 }
 
-export function CodeViewer({ code, language, maxLines = 20, showLineNumbers = false }: Props) {
+export function CodeViewer({ code, language, maxLines = 20, showLineNumbers = false, fill = false }: Props) {
   const [expanded, setExpanded] = useState(false)
 
   const allLines = code.split('\n')
@@ -148,7 +162,9 @@ export function CodeViewer({ code, language, maxLines = 20, showLineNumbers = fa
   const showExpandToggle = allLines.length > maxLines
 
   return (
-    <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-outline-variant)]/50 bg-[var(--color-surface-container-low)]">
+    <div className={`overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-outline-variant)]/50 bg-[var(--color-surface-container-low)] ${
+      fill ? 'flex h-full min-h-0 flex-col' : ''
+    }`}>
       {/* Header */}
       <div className="flex items-center justify-between border-b border-[var(--color-outline-variant)]/40 bg-[var(--color-surface-container)] px-3 py-1.5 text-[11px] text-[var(--color-text-tertiary)]">
         <div className="flex items-center gap-3">
@@ -166,6 +182,7 @@ export function CodeViewer({ code, language, maxLines = 20, showLineNumbers = fa
         code={visibleCode}
         language={language}
         showLineNumbers={effectiveShowLineNumbers}
+        fill={fill}
       />
 
       {/* Expand/collapse toggle */}
