@@ -1,0 +1,13 @@
+{
+  "identifier": "com.agentcode.desktop",
+  "build": {
+    "beforeBuildCommand": "true"
+  },
+  "bundle": {
+    "createUpdaterArtifacts": false,
+    "externalBin": [],
+    "android": {
+      "minSdkVersion": 24
+    }
+  }
+}

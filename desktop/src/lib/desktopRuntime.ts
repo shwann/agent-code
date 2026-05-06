@@ -7,6 +7,7 @@ export function isTauriRuntime() {
 
 export async function initializeDesktopServerUrl() {
   const fallbackUrl = getDefaultBaseUrl()
+  const isMobileBuild = import.meta.env?.VITE_TAURI_MOBILE === '1'
   const queryUrl =
     typeof window !== 'undefined'
       ? new URLSearchParams(window.location.search).get('serverUrl')
@@ -14,6 +15,12 @@ export async function initializeDesktopServerUrl() {
   const requestedUrl = queryUrl?.trim() || fallbackUrl
 
   if (!isTauriRuntime()) {
+    setBaseUrl(requestedUrl)
+    await waitForHealth(requestedUrl)
+    return requestedUrl
+  }
+
+  if (isMobileBuild) {
     setBaseUrl(requestedUrl)
     await waitForHealth(requestedUrl)
     return requestedUrl

@@ -39,6 +39,7 @@ services:
       TZ: ${TZ:-Asia/Shanghai}
     volumes:
       - agent_code_data:${AGENT_CODE_HOME:-/home/agentcode}/.claude
+      - /Users/hsguo/Documents/workcode/github/aicode:aicode
       - type: bind
         source: ${AGENT_CODE_HOST_WORKSPACE_DIR:-${AGENT_CODE_WORKSPACE_DIR:-${CC_HAHA_WORKSPACE_DIR:-./workspace}}}
         target: /workspace

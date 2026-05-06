@@ -1,3 +1,4 @@
+#[cfg(not(mobile))]
 use std::{
     collections::{HashMap, VecDeque},
     io::{Error as IoError, ErrorKind, Read, Write},
@@ -13,28 +14,36 @@ use std::{
     time::{Duration, Instant},
 };
 
+#[cfg(not(mobile))]
 use portable_pty::{native_pty_system, ChildKiller, CommandBuilder, MasterPty, PtySize};
 use serde::Serialize;
 #[cfg(target_os = "macos")]
 use tauri::menu::{MenuBuilder, MenuItemBuilder, SubmenuBuilder};
+#[cfg(not(mobile))]
 use tauri::Emitter;
+#[cfg(not(mobile))]
 use tauri::{AppHandle, Manager, RunEvent, State};
+#[cfg(not(mobile))]
 use tauri_plugin_shell::{
     process::{CommandChild, CommandEvent},
     ShellExt,
 };
 
+#[cfg(not(mobile))]
 const SERVER_STARTUP_LOG_LIMIT: usize = 80;
 
 #[derive(Default)]
+#[cfg(not(mobile))]
 struct ServerState(Mutex<ServerStatus>);
 
+#[cfg(not(mobile))]
 struct ServerRuntime {
     url: String,
     child: CommandChild,
 }
 
 #[derive(Default)]
+#[cfg(not(mobile))]
 struct ServerStatus {
     runtime: Option<ServerRuntime>,
     startup_error: Option<String>,
@@ -47,14 +56,17 @@ struct ServerStatus {
 /// 而且需要支持运行时热重启 —— 用户在设置页保存飞书 / Telegram 凭据后，
 /// 前端会通过 invoke('restart_adapters_sidecar') 来重启它，让新凭据生效。
 #[derive(Default)]
+#[cfg(not(mobile))]
 struct AdapterState(Mutex<Option<CommandChild>>);
 
 #[derive(Default)]
+#[cfg(not(mobile))]
 struct TerminalState {
     next_id: AtomicU32,
     sessions: Mutex<HashMap<u32, TerminalSession>>,
 }
 
+#[cfg(not(mobile))]
 struct TerminalSession {
     master: Box<dyn MasterPty + Send>,
     writer: Mutex<Box<dyn std::io::Write + Send>>,
@@ -81,6 +93,56 @@ struct TerminalExitPayload {
     signal: Option<String>,
 }
 
+#[cfg(mobile)]
+#[tauri::command]
+fn get_server_url() -> Result<String, String> {
+    Err(
+        "Android builds do not start the bundled desktop server. Build with VITE_DESKTOP_SERVER_URL pointing at a reachable agent-code server."
+            .to_string(),
+    )
+}
+
+#[cfg(mobile)]
+#[tauri::command]
+fn restart_adapters_sidecar() -> Result<(), String> {
+    Err("Adapter sidecars are unavailable in Android builds.".to_string())
+}
+
+#[cfg(mobile)]
+#[tauri::command]
+fn prepare_for_update_install() -> Result<(), String> {
+    Ok(())
+}
+
+#[cfg(mobile)]
+#[tauri::command]
+fn terminal_spawn(
+    _cols: u16,
+    _rows: u16,
+    _cwd: Option<String>,
+) -> Result<TerminalSpawnResult, String> {
+    Err("Embedded terminals are unavailable in Android builds.".to_string())
+}
+
+#[cfg(mobile)]
+#[tauri::command]
+fn terminal_write(_session_id: u32, _data: String) -> Result<(), String> {
+    Err("Embedded terminals are unavailable in Android builds.".to_string())
+}
+
+#[cfg(mobile)]
+#[tauri::command]
+fn terminal_resize(_session_id: u32, _cols: u16, _rows: u16) -> Result<(), String> {
+    Err("Embedded terminals are unavailable in Android builds.".to_string())
+}
+
+#[cfg(mobile)]
+#[tauri::command]
+fn terminal_kill(_session_id: u32) -> Result<(), String> {
+    Ok(())
+}
+
+#[cfg(not(mobile))]
 #[tauri::command]
 fn get_server_url(state: State<'_, ServerState>) -> Result<String, String> {
     let guard = state
@@ -107,6 +169,7 @@ fn get_server_url(state: State<'_, ServerState>) -> Result<String, String> {
 ///      并重新建立 WebSocket 连接到飞书 / Telegram
 ///
 /// 凭据缺失时 sidecar 自己会 warn + skip + 退出，所以这里不需要前置检查。
+#[cfg(not(mobile))]
 #[tauri::command]
 fn restart_adapters_sidecar(app: AppHandle) -> Result<(), String> {
     stop_adapters_sidecar(&app);
@@ -114,6 +177,7 @@ fn restart_adapters_sidecar(app: AppHandle) -> Result<(), String> {
     Ok(())
 }
 
+#[cfg(not(mobile))]
 #[tauri::command]
 fn prepare_for_update_install(app: AppHandle) -> Result<(), String> {
     stop_server_sidecar(&app);
@@ -130,6 +194,7 @@ fn prepare_for_update_install(app: AppHandle) -> Result<(), String> {
     Ok(())
 }
 
+#[cfg(not(mobile))]
 #[tauri::command]
 fn terminal_spawn(
     app: AppHandle,
@@ -265,6 +330,7 @@ fn terminal_spawn(
     })
 }
 
+#[cfg(not(mobile))]
 #[tauri::command]
 fn terminal_write(
     state: State<'_, TerminalState>,
@@ -291,6 +357,7 @@ fn terminal_write(
     Ok(())
 }
 
+#[cfg(not(mobile))]
 #[tauri::command]
 fn terminal_resize(
     state: State<'_, TerminalState>,
@@ -317,6 +384,7 @@ fn terminal_resize(
     Ok(())
 }
 
+#[cfg(not(mobile))]
 #[tauri::command]
 fn terminal_kill(state: State<'_, TerminalState>, session_id: u32) -> Result<(), String> {
     let session = {
@@ -339,6 +407,7 @@ fn terminal_kill(state: State<'_, TerminalState>, session_id: u32) -> Result<(),
     Ok(())
 }
 
+#[cfg(not(mobile))]
 fn decode_terminal_output(pending: &mut Vec<u8>, chunk: &[u8]) -> String {
     pending.extend_from_slice(chunk);
     let mut output = String::new();
@@ -374,6 +443,7 @@ fn decode_terminal_output(pending: &mut Vec<u8>, chunk: &[u8]) -> String {
     output
 }
 
+#[cfg(not(mobile))]
 fn terminal_environment(shell: &str) -> HashMap<String, String> {
     let mut env: HashMap<String, String> = std::env::vars().collect();
     env.extend(login_shell_environment(shell));
@@ -381,6 +451,7 @@ fn terminal_environment(shell: &str) -> HashMap<String, String> {
     env
 }
 
+#[cfg(not(mobile))]
 fn ensure_utf8_locale(env: &mut HashMap<String, String>) {
     let fallback = default_utf8_locale();
     for key in ["LANG", "LC_CTYPE", "LC_ALL"] {
@@ -394,11 +465,13 @@ fn ensure_utf8_locale(env: &mut HashMap<String, String>) {
     }
 }
 
+#[cfg(not(mobile))]
 fn is_utf8_locale(value: &str) -> bool {
     let normalized = value.trim().to_ascii_lowercase().replace('-', "");
     normalized.contains("utf8")
 }
 
+#[cfg(not(mobile))]
 fn default_utf8_locale() -> &'static str {
     #[cfg(target_os = "macos")]
     {
@@ -414,7 +487,7 @@ fn default_utf8_locale() -> &'static str {
     }
 }
 
-#[cfg(not(target_os = "windows"))]
+#[cfg(all(not(mobile), not(target_os = "windows")))]
 fn login_shell_environment(shell: &str) -> HashMap<String, String> {
     let Ok(mut child) = StdCommand::new(shell)
         .args(["-l", "-c", "env -0"])
@@ -451,11 +524,12 @@ fn login_shell_environment(shell: &str) -> HashMap<String, String> {
     }
 }
 
-#[cfg(target_os = "windows")]
+#[cfg(all(not(mobile), target_os = "windows"))]
 fn login_shell_environment(_shell: &str) -> HashMap<String, String> {
     HashMap::new()
 }
 
+#[cfg(not(mobile))]
 fn parse_env_block(bytes: &[u8]) -> HashMap<String, String> {
     bytes
         .split(|byte| *byte == 0)
@@ -474,6 +548,7 @@ fn parse_env_block(bytes: &[u8]) -> HashMap<String, String> {
         .collect()
 }
 
+#[cfg(not(mobile))]
 fn resolve_terminal_cwd(cwd: Option<String>) -> Result<PathBuf, String> {
     let path = match cwd.and_then(|value| {
         let trimmed = value.trim();
@@ -496,12 +571,14 @@ fn resolve_terminal_cwd(cwd: Option<String>) -> Result<PathBuf, String> {
     }
 }
 
+#[cfg(not(mobile))]
 fn home_dir() -> Option<PathBuf> {
     std::env::var_os("HOME")
         .or_else(|| std::env::var_os("USERPROFILE"))
         .map(PathBuf::from)
 }
 
+#[cfg(not(mobile))]
 fn default_shell() -> String {
     #[cfg(target_os = "windows")]
     {
@@ -519,6 +596,7 @@ fn default_shell() -> String {
     }
 }
 
+#[cfg(not(mobile))]
 fn reserve_local_port() -> Result<u16, String> {
     let listener =
         TcpListener::bind("127.0.0.1:0").map_err(|err| format!("bind local port: {err}"))?;
@@ -530,6 +608,7 @@ fn reserve_local_port() -> Result<u16, String> {
     Ok(port)
 }
 
+#[cfg(not(mobile))]
 fn wait_for_server(url_host: &str, port: u16) -> Result<(), String> {
     let addr: SocketAddr = format!("{url_host}:{port}")
         .parse()
@@ -548,6 +627,7 @@ fn wait_for_server(url_host: &str, port: u16) -> Result<(), String> {
     ))
 }
 
+#[cfg(not(mobile))]
 fn push_server_startup_log(logs: &Arc<Mutex<VecDeque<String>>>, line: String) {
     let line = line.trim_end().to_string();
     if line.is_empty() {
@@ -563,6 +643,7 @@ fn push_server_startup_log(logs: &Arc<Mutex<VecDeque<String>>>, line: String) {
     guard.push_back(line);
 }
 
+#[cfg(not(mobile))]
 fn format_server_startup_error(message: &str, logs: &Arc<Mutex<VecDeque<String>>>) -> String {
     let log_text = logs
         .lock()
@@ -574,6 +655,7 @@ fn format_server_startup_error(message: &str, logs: &Arc<Mutex<VecDeque<String>>
     format!("{message}\n\nRecent server logs:\n{log_text}")
 }
 
+#[cfg(not(mobile))]
 fn resolve_app_root(_app: &AppHandle) -> Result<PathBuf, String> {
     // 历史用途：此前 sidecar launcher 用 dynamic file:// import 加载磁盘上
     // 的 src/server/index.ts 和 preload.ts，所以 Tauri 必须把整个 src/ +
@@ -595,6 +677,7 @@ fn resolve_app_root(_app: &AppHandle) -> Result<PathBuf, String> {
     Ok(dir)
 }
 
+#[cfg(not(mobile))]
 fn start_server_sidecar(app: &AppHandle) -> Result<ServerRuntime, String> {
     let host = "127.0.0.1";
     let port = reserve_local_port()?;
@@ -663,6 +746,7 @@ fn start_server_sidecar(app: &AppHandle) -> Result<ServerRuntime, String> {
     Ok(ServerRuntime { url, child })
 }
 
+#[cfg(not(mobile))]
 fn stop_server_sidecar(app: &AppHandle) {
     let Some(state) = app.try_state::<ServerState>() else {
         return;
@@ -679,6 +763,7 @@ fn stop_server_sidecar(app: &AppHandle) {
 
 /// 启动 adapter sidecar。返回 Result 主要为了把"无法 spawn"和"spawn 后立刻
 /// 退出（凭据缺失）"区分开 —— 后者不算错误，是正常 default 状态。
+#[cfg(not(mobile))]
 fn start_adapters_sidecar(app: &AppHandle) -> Result<CommandChild, String> {
     let app_root = resolve_app_root(app)?;
     let app_root_arg = app_root.to_string_lossy().to_string();
@@ -761,6 +846,7 @@ fn start_adapters_sidecar(app: &AppHandle) -> Result<CommandChild, String> {
 
 /// spawn adapter sidecar 并把 child handle 存进 AdapterState。
 /// 在启动 + 重启路径里复用，集中处理"无法 spawn"的日志。
+#[cfg(not(mobile))]
 fn spawn_and_track_adapters_sidecar(app: &AppHandle) {
     match start_adapters_sidecar(app) {
         Ok(child) => {
@@ -776,6 +862,7 @@ fn spawn_and_track_adapters_sidecar(app: &AppHandle) {
     }
 }
 
+#[cfg(not(mobile))]
 fn stop_adapters_sidecar(app: &AppHandle) {
     let Some(state) = app.try_state::<AdapterState>() else {
         return;
@@ -788,7 +875,7 @@ fn stop_adapters_sidecar(app: &AppHandle) {
     }
 }
 
-#[cfg(target_os = "windows")]
+#[cfg(all(not(mobile), target_os = "windows"))]
 fn kill_windows_sidecars() {
     for image_name in [
         "claude-sidecar-x86_64-pc-windows-msvc.exe",
@@ -886,7 +973,7 @@ mod tests {
     }
 }
 
-#[cfg_attr(mobile, tauri::mobile_entry_point)]
+#[cfg(not(mobile))]
 pub fn run() {
     let builder = tauri::Builder::default()
         .manage(ServerState::default())
@@ -1002,4 +1089,22 @@ pub fn run() {
             stop_adapters_sidecar(app_handle);
         }
     });
+}
+
+#[cfg(mobile)]
+#[cfg_attr(mobile, tauri::mobile_entry_point)]
+pub fn run() {
+    tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
+        .invoke_handler(tauri::generate_handler![
+            get_server_url,
+            restart_adapters_sidecar,
+            prepare_for_update_install,
+            terminal_spawn,
+            terminal_write,
+            terminal_resize,
+            terminal_kill
+        ])
+        .run(tauri::generate_context!())
+        .expect("error while running tauri mobile application");
 }

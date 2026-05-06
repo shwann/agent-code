@@ -1,5 +1,7 @@
 import { isTauriRuntime } from '../lib/desktopRuntime'
 
+const isMobileBuild = import.meta.env?.VITE_TAURI_MOBILE === '1'
+
 export type TerminalSpawnResult = {
   session_id: number
   shell: string
@@ -20,7 +22,7 @@ export type TerminalExitPayload = {
 type Unlisten = () => void
 
 async function invoke<T>(command: string, args?: Record<string, unknown>): Promise<T> {
-  if (!isTauriRuntime()) {
+  if (!isTauriRuntime() || isMobileBuild) {
     throw new Error('Terminal is available in the desktop app runtime.')
   }
   const api = await import(/* @vite-ignore */ '@tauri-apps/api/core')
@@ -28,7 +30,7 @@ async function invoke<T>(command: string, args?: Record<string, unknown>): Promi
 }
 
 export const terminalApi = {
-  isAvailable: isTauriRuntime,
+  isAvailable: () => isTauriRuntime() && !isMobileBuild,
 
   spawn(input: { cols: number; rows: number; cwd?: string }) {
     return invoke<TerminalSpawnResult>('terminal_spawn', input)
